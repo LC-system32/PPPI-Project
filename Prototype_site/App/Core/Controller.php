@@ -7,23 +7,24 @@ class Controller
     function view(string $name, array $data = [])
     {
         extract($data);
-        require BASE_PATH . '/view/' . $name . '.php';
-    }
-    protected function getStoragePath(): string
-    {
-        return __DIR__ . '/../../storage/users.json';
+        require BASE_PATH . '/public/view/' . $name . '.php';
     }
 
-    protected function loadUsers(): array
+    protected function redirect(string $url): void
     {
-        $file = $this->getStoragePath();
-        if (!file_exists($file)) return [];
-        $content = file_get_contents($file);
-        return json_decode($content, true) ?: [];
+        header("Location: {$url}");
+        exit;
     }
 
-    protected function saveUsers(array $users): void
+    protected function flash(string $key, mixed $value): void
     {
-        file_put_contents($this->getStoragePath(), json_encode($users, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        $_SESSION['flash'][$key] = $value;
+    }
+
+    protected function pullFlash(string $key, mixed $default = null): mixed
+    {
+        $value = $_SESSION['flash'][$key] ?? $default;
+        unset($_SESSION['flash'][$key]);
+        return $value;
     }
 }

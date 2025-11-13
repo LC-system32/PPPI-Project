@@ -3,120 +3,200 @@
 namespace App\Controllers;
 
 use App\Core\Controller;
+use App\Core\Database;
+use App\Models\User;
+use PDO;
 
 class AuthController extends Controller
 {
-    private string $usersFile = __DIR__ . '/../../data/users.json';
+    private PDO $db;
 
-    protected function loadUsers(): array
+    public function __construct()
     {
-        if (!file_exists($this->usersFile)) return [];
-        return json_decode(file_get_contents($this->usersFile), true) ?? [];
+        $this->startSession();
+        $this->ensureCsrfToken();
+        $this->db = Database::get();
     }
 
-    protected function saveUsers(array $users): void
+    public function auth(): void
     {
-        $dir = dirname($this->usersFile);
-        if (!is_dir($dir)) mkdir($dir, 0777, true);
-        file_put_contents($this->usersFile, json_encode($users, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        $message = $this->pullFlash('message');
+        $errors = $this->pullFlash('errors') ?? [];
+        $old = $this->pullFlash('old') ?? [];
+        $activeTab = $this->pullFlash('activeTab') ?? 'login';
+
+        $this->view('auth', compact('message', 'errors', 'old', 'activeTab'));
     }
 
-    protected function redirect(string $url): void
+    public function login(): void
     {
-        header("Location: $url");
-        exit;
+        $payload = $this->sanitize($_POST);
+        $errors = $this->validate($payload, [
+            'csrf_token' => ['required', 'csrf'],
+            'email' => ['required', 'email'],
+            'password' => ['required', 'min:6'],
+        ]);
+
+        if (!$errors) {
+            $user = User::findByEmail($this->db, $payload['email']);
+            if ($user && $user->verifyPassword($payload['password'])) {
+                session_regenerate_id(true);
+                $_SESSION['user'] = [
+                    'id' => $user->id,
+                    'login' => $user->login,
+                    'email' => $user->email,
+                    'role_id' => $user->role_id,
+                ];
+                $this->redirect('/');
+            }
+            $errors[] = 'Неправильна пара email / пароль.';
+        }
+
+        $this->flashErrorsAndOld($errors, $payload, 'login');
+        $this->redirect('/auth');
     }
 
-    public function auth()
+    public function register(): void
     {
-        if (session_status() === PHP_SESSION_NONE) session_start();
+        $payload = $this->sanitize($_POST);
 
-        $message = $_SESSION['message'] ?? null;
-        $errors = $_SESSION['errors'] ?? [];
-        unset($_SESSION['message'], $_SESSION['errors']);
+        $errors = $this->validate($payload, [
+            'csrf_token' => ['required', 'csrf'],
+            'login' => ['required', 'min:3', 'max:32'],
+            'email' => ['required', 'email'],
+            'password' => ['required', 'min:6'],
+            'confirm_password' => ['required', 'same:password'],
+        ]);
 
-        $this->view('auth', compact('message', 'errors'));
+        if (!$errors) {
+            if (User::findByEmail($this->db, $payload['email'])) {
+                $errors[] = 'Користувач із таким email вже існує.';
+            }
+            if (User::findByLogin($this->db, $payload['login'])) {
+                $errors[] = 'Користувач із таким логіном вже існує.';
+            }
+        }
+
+        if ($errors) {
+            $this->flashErrorsAndOld($errors, $payload, 'register');
+            $this->redirect('/auth');
+        }
+
+        $user = User::create($this->db, [
+            'login' => $payload['login'],
+            'email' => $payload['email'],
+            'password_hash' => User::hashPassword($payload['password']),
+        ]);
+
+        if (!$user instanceof User) {
+            $this->flash('errors', ['Не вдалося створити обліковий запис. Спробуйте ще раз.']);
+            $this->flash('activeTab', 'register');
+            $this->redirect('/auth');
+        }
+
+        session_regenerate_id(true);
+
+        /** @var User $user */
+        $_SESSION['user'] = [
+            'id' => $user->id,
+            'login' => $user->login,
+            'email' => $user->email,
+            'role_id' => $user->role_id,
+        ];
+
+        $this->redirect('/');
     }
 
-    public function login()
+    public function logout(): void
     {
-        if (session_status() === PHP_SESSION_NONE) session_start();
+        $_SESSION = [];
+        session_destroy();
+        $this->redirect('/auth');
+    }
 
-        $email = trim($_POST['email'] ?? '');
-        $password = trim($_POST['password'] ?? '');
+    private function sanitize(array $input): array
+    {
+        return array_map(static fn($value) => is_string($value) ? trim($value) : $value, $input);
+    }
+
+    private function startSession(): void
+    {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
+    }
+
+    private function ensureCsrfToken(): void
+    {
+        if (empty($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
+    }
+
+    private function validate(array $data, array $rules): array
+    {
         $errors = [];
 
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = "Невірний формат email.";
-        if (strlen($password) < 6) $errors[] = "Пароль має містити мінімум 6 символів.";
+        foreach ($rules as $field => $fieldRules) {
+            $value = $data[$field] ?? '';
 
-        if (empty($errors)) {
-            $users = $this->loadUsers();
-            $found = null;
+            foreach ($fieldRules as $rule) {
+                if ($rule === 'required' && $value === '') {
+                    $errors[] = "Поле {$field} є обов'язковим.";
+                    break;
+                }
 
-            foreach ($users as $u) {
-                if ($u['email'] === $email) {
-                    $found = $u;
+                if ($rule === 'email' && $value && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                    $errors[] = 'Введено некоректний email.';
+                    break;
+                }
+
+                if (str_starts_with($rule, 'min:')) {
+                    $min = (int) substr($rule, 4);
+                    if (strlen((string) $value) < $min) {
+                        $errors[] = "Поле {$field} повинно містити щонайменше {$min} символів.";
+                        break;
+                    }
+                }
+
+                if (str_starts_with($rule, 'max:')) {
+                    $max = (int) substr($rule, 4);
+                    if (strlen((string) $value) > $max) {
+                        $errors[] = "Поле {$field} повинно містити не більше {$max} символів.";
+                        break;
+                    }
+                }
+
+                if (str_starts_with($rule, 'same:')) {
+                    $other = substr($rule, 5);
+                    if (($data[$other] ?? null) !== $value) {
+                        $errors[] = 'Паролі не співпадають.';
+                        break;
+                    }
+                }
+
+                if ($rule === 'csrf' && !$this->validCsrf($value)) {
+                    $errors[] = 'Сесію закінчено. Оновіть сторінку й спробуйте знову.';
                     break;
                 }
             }
-
-            if ($found && password_verify($password, $found['password'])) {
-                $_SESSION['user'] = $found['name'];
-                $_SESSION['message'] = "✅ Вітаємо, {$found['name']}!";
-                $_SESSION['activeTab'] = 'login';
-            } else {
-                $errors[] = "❌ Невірний email або пароль.";
-            }
         }
 
-        if (!empty($errors)) $_SESSION['errors'] = $errors;
-
-        // Встановлюємо активну вкладку для відображення після редиректу
-        $_SESSION['activeTab'] = 'login';
-
-        header('Location: /auth');
-        exit;
+        return $errors;
     }
 
-    public function register()
+    private function validCsrf(string $token): bool
     {
-        if (session_status() === PHP_SESSION_NONE) session_start();
+        return $token && hash_equals($_SESSION['csrf_token'] ?? '', $token);
+    }
 
-        $name = trim($_POST['name'] ?? '');
-        $email = trim($_POST['email'] ?? '');
-        $password = trim($_POST['password'] ?? '');
-        $confirm = trim($_POST['confirm_password'] ?? '');
-        $errors = [];
-
-        if (empty($name)) $errors[] = "Ім’я обов’язкове.";
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = "Невірний email.";
-        if (strlen($password) < 6) $errors[] = "Пароль має містити мінімум 6 символів.";
-        if ($password !== $confirm) $errors[] = "Паролі не збігаються.";
-
-        $users = $this->loadUsers();
-        foreach ($users as $u) {
-            if ($u['email'] === $email) {
-                $errors[] = "Користувач з таким email вже існує.";
-                break;
-            }
-        }
-
-        if (empty($errors)) {
-            $users[] = [
-                'name' => $name,
-                'email' => $email,
-                'password' => password_hash($password, PASSWORD_BCRYPT),
-                'created_at' => date('Y-m-d H:i:s')
-            ];
-            $this->saveUsers($users);
-            $_SESSION['message'] = "✅ Реєстрація успішна, {$name}!";
-            $_SESSION['activeTab'] = 'login'; // після успіху — відображаємо логін
-        } else {
-            $_SESSION['errors'] = $errors;
-            $_SESSION['activeTab'] = 'register'; // при помилці — відображаємо вкладку реєстрації
-        }
-
-        header('Location: /auth');
-        exit;
+    private function flashErrorsAndOld(array $errors, array $payload, string $tab): void
+    {
+        $this->flash('errors', $errors);
+        $this->flash('old', [
+            'login' => $payload['login'] ?? '',
+            'email' => $payload['email'] ?? '',
+        ]);
+        $this->flash('activeTab', $tab);
     }
 }
