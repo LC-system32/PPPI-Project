@@ -1,24 +1,12 @@
 <?php
-require_once __DIR__ . '/routes/web.php';
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-$request = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$request = rtrim($request, '/');
+use App\Core\App;
 
-if ($request === '') $request = '/';
+define('BASE_PATH', __DIR__);
 
-if (isset($routes[$request])) {
-    $action = $routes[$request];
-    
-    if (is_callable($action)) {
-        echo $action();
-    }
-    else {
-        list($controller, $method) = explode('@', $action);
-        require_once __DIR__ . "/controller/$controller.php";
-        $instance = new $controller();
-        echo $instance->$method();
-    }
-} else {
-    http_response_code(404);
-    echo "<h1>404 — Page not found</h1>";
-}
+require_once BASE_PATH . '/vendor/autoload.php';
+
+$app = new App();
+$app->run();

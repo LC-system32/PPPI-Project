@@ -1,0 +1,12 @@
+{
+    "name": "home/prototype_site",
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-4": {
+            "App\\": "App/"
+        }
+    },
+    "require": {
+        "ext-pdo": "*"
+    }
+}
