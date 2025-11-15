@@ -117,7 +117,7 @@
     <div class="container">
         <h2 class="fw-bold mb-3">Потрібна допомога?</h2>
         <p class="mb-4" style="font-size: 1.1rem;">Ми завжди поруч, щоб допомогти з оформленням повернення, обміну або консультацією щодо умов гарантії.</p>
-        <a href="/contact" class="btn btn-warning btn-lg pulse-hover"><i class="bi bi-chat-dots me-2"></i>Зв’язатися з підтримкою</a>
+        <a href="/support" class="btn btn-warning btn-lg pulse-hover"><i class="bi bi-chat-dots me-2"></i>Зв’язатися з підтримкою</a>
     </div>
 </section>
 

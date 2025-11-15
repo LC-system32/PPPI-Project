@@ -1,6 +1,10 @@
-﻿<?php include __DIR__ . '/../includes/header.php'; ?>
+﻿<?php
+// File: /views/home/index.php (Bootstrap-only carousels with external arrows)
+?>
+<?php include __DIR__ . '/../includes/header.php'; ?>
 <?php include __DIR__ . '/../includes/navbar.php'; ?>
 
+<!-- === HERO (оригінал, не чіпаємо) === -->
 <section class="hero position-relative text-white text-center">
     <div class="overlay position-absolute top-0 start-0 w-100 h-100"
         style="background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.7)); z-index:1;"></div>
@@ -11,21 +15,21 @@
             Широкий вибір запчастин: оригінальні та якісні аналоги, швидка доставка по всій Україні та зручний пошук за маркою, моделлю або VIN.
         </p>
 
-        <div class="d-flex justify-content-center gap-4 flex-wrap mb-4">
+        <div class="d-flex justify-content-center gap-4 flex-wrap mb-4" aria-label="Ключові переваги">
             <div class="feature-item text-center">
-                <i class="bi bi-truck fs-1 mb-2 text-warning"></i>
+                <i class="bi bi-truck fs-1 mb-2 text-warning" aria-hidden="true"></i>
                 <p class="mb-0">Доставка 24/7</p>
             </div>
             <div class="feature-item text-center">
-                <i class="bi bi-award fs-1 mb-2 text-warning"></i>
+                <i class="bi bi-award fs-1 mb-2 text-warning" aria-hidden="true"></i>
                 <p class="mb-0">Гарантія якості</p>
             </div>
             <div class="feature-item text-center">
-                <i class="bi bi-headset fs-1 mb-2 text-warning"></i>
+                <i class="bi bi-headset fs-1 mb-2 text-warning" aria-hidden="true"></i>
                 <p class="mb-0">Підтримка онлайн</p>
             </div>
             <div class="feature-item text-center">
-                <i class="bi bi-search fs-1 mb-2 text-warning"></i>
+                <i class="bi bi-search fs-1 mb-2 text-warning" aria-hidden="true"></i>
                 <p class="mb-0">Швидкий пошук</p>
             </div>
         </div>
@@ -38,107 +42,447 @@
         style="object-fit: cover; z-index:0;">
 </section>
 
-<div class="search-module container position-relative mt-n4 z-2 fade-in">
-    <form class="search-form d-flex align-items-center justify-content-between gap-2 p-3 rounded-4 shadow-sm bg-white bg-opacity-90">
+<!-- === SEARCH MODULE (оригінал, не чіпаємо) === -->
+<div class="search-module container position-relative mt-n4 z-2">
+    <form action="/catalog" method="GET"
+        class="search-form d-flex align-items-center gap-3 p-3 rounded-4 shadow-sm bg-white"
+        role="search" aria-label="Пошук запчастин">
 
-        <select class="form-select flex-fill" style="min-width: 140px;">
-            <option selected disabled>Марка авто</option>
-            <option>BMW</option>
-            <option>Audi</option>
-            <option>Mercedes</option>
-        </select>
+        <input type="text"
+            name="q"
+            class="form-control flex-grow-1"
+            placeholder="Введіть артикул, VIN або назву деталі, наприклад, 'Фільтр масляний BMW E46'"
+            aria-label="Пошуковий запит">
 
-        <select class="form-select flex-fill" style="min-width: 140px;">
-            <option selected disabled>Модель авто</option>
-            <option>3 Series</option>
-            <option>5 Series</option>
-            <option>A4</option>
-            <option>C-Class</option>
-        </select>
-
-        <select class="form-select flex-fill" style="min-width: 130px;">
-            <option selected disabled>Рік</option>
-            <option>2025</option>
-            <option>2024</option>
-            <option>2023</option>
-        </select>
-
-        <input type="text" class="form-control flex-grow-1" placeholder="VIN або артикул">
-        <button type="submit" class="btn btn-warning fw-semibold px-4">Пошук</button>
+        <button type="submit"
+            class="btn btn-dark fw-semibold px-4">
+            Пошук
+        </button>
     </form>
 </div>
 
-<section class="py-5 bg-light fade-in">
+<!-- === ПОПУЛЯРНІ МАРКИ АВТО (Bootstrap carousel + зовнішні кнопки) === -->
+<section class="py-5 bg-light">
     <div class="container">
-        <h2 class="fw-bold mb-4 text-center">Обери марку свого авто</h2>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="fw-bold mb-0 h3">Популярні марки авто</h2>
+            <a href="/brands" class="btn btn-outline-dark btn-sm">Всі марки</a>
+        </div>
 
-        <div class="row g-4 justify-content-center">
-            <?php
-            $brands = [
-                'BMW' => 'https://upload.wikimedia.org/wikipedia/commons/f/f4/BMW_logo_%28gray%29.svg',
-                'Audi' => 'https://upload.wikimedia.org/wikipedia/commons/9/92/Audi-Logo_2016.svg',
-                'Mercedes-Benz' => 'https://upload.wikimedia.org/wikipedia/commons/9/90/Mercedes-Logo.svg',
-                'Toyota' => 'https://upload.wikimedia.org/wikipedia/commons/9/9d/Toyota_carlogo.svg',
-                'Volkswagen' => 'https://upload.wikimedia.org/wikipedia/commons/6/6d/Volkswagen_logo_2019.svg',
-                'Ford' => 'https://upload.wikimedia.org/wikipedia/commons/3/3e/Ford_logo_flat.svg',
-                'Honda' => 'https://upload.wikimedia.org/wikipedia/commons/1/12/Honda_Canada.webp',
-                'Nissan' => 'https://upload.wikimedia.org/wikipedia/commons/1/15/Nissan_Logo_%281998-2001%29.png',
-                'Mazda' => 'https://upload.wikimedia.org/wikipedia/commons/b/b6/Mazda_logo_with_emblem%2C_new.svg',
-                'Hyundai' => 'https://upload.wikimedia.org/wikipedia/commons/4/44/Hyundai_Motor_Company_logo.svg',
-                'Kia' => 'https://upload.wikimedia.org/wikipedia/commons/c/c4/KIA-Logo-1994-2012.png',
-                'Renault' => 'https://upload.wikimedia.org/wikipedia/commons/4/44/Renault_1990.svg',
-                'Peugeot' => 'https://logos-world.net/wp-content/uploads/2021/10/Peugeot-Logo.png',
-                'Citroen' => 'https://upload.wikimedia.org/wikipedia/commons/0/0b/Citroen-logo-2009.png',
-                'Opel' => 'https://upload.wikimedia.org/wikipedia/commons/7/70/Opel_Logo_2021.svg',
-                'Skoda' => 'https://upload.wikimedia.org/wikipedia/commons/0/09/%C5%A0koda_nieuw.png',
-                'Volvo' => 'https://upload.wikimedia.org/wikipedia/commons/b/b9/Volvo_Trucks_%26_Bus_logo.jpg',
-                'Chevrolet' => 'https://upload.wikimedia.org/wikipedia/ru/thumb/7/7f/Chevrolet_new_logo.png/250px-Chevrolet_new_logo.png',
-                'Mitsubishi' => 'https://upload.wikimedia.org/wikipedia/commons/9/9a/Mitsubishi_motors_new_logo.svg',
-                'Subaru' => 'https://upload.wikimedia.org/wikipedia/commons/c/ca/Subaru_logo_%28transparent%29.svg',
-                'Lexus' => 'https://upload.wikimedia.org/wikipedia/commons/7/75/Lexus.svg',
-                'Fiat' => 'https://upload.wikimedia.org/wikipedia/uk/thumb/7/7b/Fiat_Логотип.svg/320px-Fiat_Логотип.svg.png',
-                'Jeep' => 'https://upload.wikimedia.org/wikipedia/commons/0/0d/Jeep_logo.svg',
-                'Suzuki' => 'https://upload.wikimedia.org/wikipedia/commons/b/b9/Suzuki_logo_2025.svg',
-                'Porsche' => 'https://porsche.ua/manifest/android-icon-192x192.png'
-            ];
+        <?php if (!empty($brands) && is_array($brands)): ?>
+            <?php $brandsPerSlide = 6; $brandsCount = count($brands); ?>
 
-            $fallback = 'https://gavalimotors.com/adminpanel/assets/images/carnotfound.jpg';
+            <div class="d-flex align-items-center">
+                <!-- Ліва кнопка -->
+                <button class="btn btn-outline-secondary me-2"
+                        type="button"
+                        data-bs-target="#brandsCarousel"
+                        data-bs-slide="prev"
+                        aria-label="Попередні бренди">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
 
-            foreach ($brands as $name => $logoUrl):
-                $imgSrc = !empty($logoUrl) ? $logoUrl : $fallback;
-            ?>
-                <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-                    <div class="card border-0 shadow-sm text-center brand-card h-100 p-3 hover-shadow d-flex flex-column align-items-center justify-content-center">
-                        <img src="<?= $imgSrc ?>" alt="<?= $name ?>"
-                            class="img-fluid mb-2"
-                            style="max-height: 60px; object-fit: contain;">
-                        <h6 class="fw-semibold mb-0"><?= $name ?></h6>
+                <!-- Карусель брендів -->
+                <div id="brandsCarousel" class="carousel slide flex-grow-1" data-bs-ride="false">
+                    <div class="carousel-inner">
+
+                        <?php foreach ($brands as $i => $brand): ?>
+                            <?php
+                            $brandName = htmlspecialchars($brand['name'] ?? 'Марка', ENT_QUOTES, 'UTF-8');
+                            $brandSlug = htmlspecialchars($brand['slug'] ?? '#', ENT_QUOTES, 'UTF-8');
+                            $brandLogo = $brand['logo_url'] ?? null;
+
+                            if ($i % $brandsPerSlide === 0):
+                                $activeClass = ($i === 0) ? ' active' : '';
+                            ?>
+                                <div class="carousel-item<?= $activeClass; ?>">
+                                    <div class="row g-3 justify-content-start">
+                            <?php endif; ?>
+
+                                        <div class="col-6 col-md-4 col-lg-2">
+                                            <a href="/brand/<?= $brandSlug ?>" class="text-decoration-none">
+                                                <div class="card text-center border-0 shadow-sm py-3 h-100">
+                                                    <?php if ($brandLogo): ?>
+                                                        <img src="<?= htmlspecialchars($brandLogo, ENT_QUOTES, 'UTF-8') ?>"
+                                                             alt="<?= $brandName ?> логотип"
+                                                             class="mx-auto mb-2"
+                                                             loading="lazy"
+                                                             style="max-height:42px; width:auto;">
+                                                    <?php else: ?>
+                                                        <div class="rounded-circle bg-dark text-white mx-auto mb-2 d-flex align-items-center justify-content-center"
+                                                             style="width:42px;height:42px;">
+                                                            <span class="fw-bold"><?= mb_strtoupper(mb_substr($brandName, 0, 1)) ?></span>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                    <h6 class="fw-semibold mb-0 text-dark"><?= $brandName ?></h6>
+                                                </div>
+                                            </a>
+                                        </div>
+
+                            <?php
+                            $isLastInSlide = ($i % $brandsPerSlide === $brandsPerSlide - 1) || ($i === $brandsCount - 1);
+                            if ($isLastInSlide): ?>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+
                     </div>
                 </div>
-            <?php endforeach; ?>
 
+                <!-- Права кнопка -->
+                <button class="btn btn-outline-secondary ms-2"
+                        type="button"
+                        data-bs-target="#brandsCarousel"
+                        data-bs-slide="next"
+                        aria-label="Наступні бренди">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+        <?php else: ?>
+            <div class="alert alert-secondary mb-0" role="status">Список брендів тимчасово недоступний.</div>
+        <?php endif; ?>
+    </div>
+</section>
+
+<!-- === ПОПУЛЯРНІ КАТЕГОРІЇ (Bootstrap carousel + зовнішні кнопки) === -->
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="fw-bold mb-0 h3">Популярні категорії запчастин</h2>
+            <a href="/catalog" class="btn btn-outline-dark btn-sm">Дивитися все</a>
+        </div>
+
+        <?php if (!empty($categories) && is_array($categories)): ?>
+            <?php $catsPerSlide = 4; $catsCount = count($categories); ?>
+
+            <div class="d-flex align-items-center">
+                <!-- Ліва кнопка -->
+                <button class="btn btn-outline-secondary me-2"
+                        type="button"
+                        data-bs-target="#categoriesCarousel"
+                        data-bs-slide="prev"
+                        aria-label="Попередні категорії">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+
+                <!-- Карусель категорій -->
+                <div id="categoriesCarousel" class="carousel slide flex-grow-1" data-bs-ride="false">
+                    <div class="carousel-inner">
+
+                        <?php foreach ($categories as $i => $category): ?>
+                            <?php
+                            $catName = htmlspecialchars($category['name'] ?? 'Категорія', ENT_QUOTES, 'UTF-8');
+                            $catSlug = htmlspecialchars($category['slug'] ?? '#', ENT_QUOTES, 'UTF-8');
+                            $catDesc = trim((string)($category['description'] ?? ''));
+                            $catDesc = $catDesc !== '' ? nl2br(str_replace('\n', "\n", htmlspecialchars($catDesc, ENT_QUOTES, 'UTF-8'))) : 'Перевірені виробники, швидка доставка.';
+                            $catIcon = $category['icon'] ?? null;
+
+                            if ($i % $catsPerSlide === 0):
+                                $activeClass = ($i === 0) ? ' active' : '';
+                            ?>
+                                <div class="carousel-item<?= $activeClass; ?>">
+                                    <div class="row g-4">
+                            <?php endif; ?>
+
+                                        <div class="col-6 col-md-3">
+                                            <a href="/category/<?= $catSlug ?>" class="text-decoration-none text-dark" aria-label="Категорія: <?= $catName ?>">
+                                                <div class="card border-0 shadow-sm h-100">
+                                                    <div class="card-body d-flex flex-column">
+                                                        <div class="mb-2">
+                                                            <?php if ($catIcon): ?>
+                                                                <img src="<?= htmlspecialchars($catIcon, ENT_QUOTES, 'UTF-8') ?>"
+                                                                     alt="Іконка <?= $catName ?>" loading="lazy" style="height:28px;width:auto;">
+                                                            <?php else: ?>
+                                                                <i class="bi bi-grid fs-4" aria-hidden="true"></i>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                        <h5 class="card-title fw-semibold mb-2"><?= $catName ?></h5>
+                                                        <p class="text-muted small mb-3"><?= $catDesc ?></p>
+                                                        <span class="btn btn-outline-dark w-100 mt-auto">Переглянути</span>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </div>
+
+                            <?php
+                            $isLastInSlide = ($i % $catsPerSlide === $catsPerSlide - 1) || ($i === $catsCount - 1);
+                            if ($isLastInSlide): ?>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+
+                    </div>
+                </div>
+
+                <!-- Права кнопка -->
+                <button class="btn btn-outline-secondary ms-2"
+                        type="button"
+                        data-bs-target="#categoriesCarousel"
+                        data-bs-slide="next"
+                        aria-label="Наступні категорії">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+        <?php else: ?>
+            <div class="alert alert-secondary mb-0">Категорії тимчасово недоступні.</div>
+        <?php endif; ?>
+    </div>
+</section>
+
+<!-- === РЕКОМЕНДОВАНІ ТОВАРИ (Bootstrap carousel + зовнішні кнопки) === -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="fw-bold mb-0 h3">Рекомендовані товари</h2>
+            <a href="/catalog" class="btn btn-outline-dark btn-sm">Дивитися все</a>
+        </div>
+
+        <?php if (!empty($featured) && is_array($featured)): ?>
+            <?php $productsPerSlide = 4; $prodCount = count($featured); ?>
+
+            <div class="d-flex align-items-center">
+                <!-- Ліва кнопка -->
+                <button class="btn btn-outline-secondary me-2"
+                        type="button"
+                        data-bs-target="#featuredCarousel"
+                        data-bs-slide="prev"
+                        aria-label="Попередні товари">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+
+                <!-- Карусель товарів -->
+                <div id="featuredCarousel" class="carousel slide flex-grow-1" data-bs-ride="false">
+                    <div class="carousel-inner" itemscope itemtype="https://schema.org/ItemList">
+
+                        <?php foreach ($featured as $i => $product): ?>
+                            <?php
+                            $pName   = htmlspecialchars($product['name'] ?? 'Товар', ENT_QUOTES, 'UTF-8');
+                            $pSlug   = htmlspecialchars($product['slug'] ?? '#', ENT_QUOTES, 'UTF-8');
+                            $pCat    = htmlspecialchars($product['category_name'] ?? 'Категорія', ENT_QUOTES, 'UTF-8');
+                            $pPrice  = isset($product['price']) ? (float)$product['price'] : null;
+                            $pImg    = $product['image_url'] ?? null;
+                            $pInStock = (bool)($product['in_stock'] ?? true);
+                            $pRating  = isset($product['rating']) ? (float)$product['rating'] : null;
+                            $pReviews = isset($product['reviews_count']) ? (int)$product['reviews_count'] : null;
+
+                            if ($i % $productsPerSlide === 0):
+                                $activeClass = ($i === 0) ? ' active' : '';
+                            ?>
+                                <div class="carousel-item<?= $activeClass; ?>">
+                                    <div class="row g-4">
+                            <?php endif; ?>
+
+                                        <div class="col-6 col-md-3" itemprop="itemListElement" itemscope itemtype="https://schema.org/Product">
+                                            <div class="card border-0 shadow-sm h-100">
+
+                                                <?php if ($pImg): ?>
+                                                    <a href="/product/<?= $pSlug ?>" class="ratio ratio-4x3">
+                                                        <img src="<?= htmlspecialchars($pImg, ENT_QUOTES, 'UTF-8') ?>"
+                                                             class="card-img-top rounded-top"
+                                                             alt="<?= $pName ?>" loading="lazy"
+                                                             style="object-fit:cover; border-top-left-radius:inherit;border-top-right-radius:inherit;">
+                                                    </a>
+                                                <?php else: ?>
+                                                    <a href="/product/<?= $pSlug ?>" class="ratio ratio-4x3 bg-light d-flex align-items-center justify-content-center text-muted text-decoration-none">
+                                                        <i class="bi bi-image fs-3" aria-hidden="true"></i>
+                                                    </a>
+                                                <?php endif; ?>
+
+                                                <div class="card-body d-flex flex-column">
+                                                    <meta itemprop="category" content="<?= $pCat ?>">
+                                                    <a href="/product/<?= $pSlug ?>" class="text-decoration-none text-dark">
+                                                        <h5 class="fw-semibold mb-1" itemprop="name"><?= $pName ?></h5>
+                                                    </a>
+                                                    <p class="text-muted small mb-2"><?= $pCat ?></p>
+
+                                                    <?php if ($pRating !== null): ?>
+                                                        <div class="d-flex align-items-center mb-2" itemprop="aggregateRating" itemscope itemtype="https://schema.org/AggregateRating">
+                                                            <meta itemprop="ratingValue" content="<?= max(0, min(5, $pRating)) ?>">
+                                                            <?php if ($pReviews !== null): ?>
+                                                                <meta itemprop="reviewCount" content="<?= $pReviews ?>">
+                                                            <?php endif; ?>
+                                                            <div class="me-2" aria-label="Рейтинг <?= number_format($pRating, 1) ?> з 5">
+                                                                <?php
+                                                                $full  = (int)floor($pRating);
+                                                                $half  = ($pRating - $full) >= 0.5 ? 1 : 0;
+                                                                $empty = 5 - $full - $half;
+                                                                echo str_repeat('<i class="bi bi-star-fill"></i>', $full);
+                                                                echo str_repeat('<i class="bi bi-star-half"></i>', $half);
+                                                                echo str_repeat('<i class="bi bi-star"></i>', $empty);
+                                                                ?>
+                                                            </div>
+                                                            <small class="text-muted">
+                                                                <?= number_format($pRating, 1) ?>
+                                                                <?= $pReviews ? ' · ' . $pReviews . ' відгуків' : '' ?>
+                                                            </small>
+                                                        </div>
+                                                    <?php endif; ?>
+
+                                                    <p class="fw-bold fs-5 mb-3" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+                                                        <?php if ($pPrice !== null): ?>
+                                                            <meta itemprop="priceCurrency" content="UAH">
+                                                            <span itemprop="price"><?= number_format($pPrice, 2, '.', ' ') ?></span> ₴
+                                                        <?php else: ?>
+                                                            <span class="text-muted">Ціну уточнюйте</span>
+                                                        <?php endif; ?>
+                                                    </p>
+
+                                                    <div class="d-flex align-items-center justify-content-between mb-3">
+                                                        <span class="badge <?= $pInStock ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary' ?>">
+                                                            <?= $pInStock ? 'В наявності' : 'Під замовлення' ?>
+                                                        </span>
+                                                    </div>
+                                                    <div class="d-grid mt-auto">
+                                                        <a href="/product/<?= $pSlug ?>" class="btn btn-dark w-100">До товару</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                            <?php
+                            $isLastInSlide = ($i % $productsPerSlide === $productsPerSlide - 1) || ($i === $prodCount - 1);
+                            if ($isLastInSlide): ?>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+
+                    </div>
+                </div>
+
+                <!-- Права кнопка -->
+                <button class="btn btn-outline-secondary ms-2"
+                        type="button"
+                        data-bs-target="#featuredCarousel"
+                        data-bs-slide="next"
+                        aria-label="Наступні товари">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+        <?php else: ?>
+            <div class="alert alert-secondary mb-0">Рекомендації тимчасово недоступні.</div>
+        <?php endif; ?>
+    </div>
+</section>
+
+<!-- === НАШІ ПЕРЕВАГИ === -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold h3">Чому обирають AutoParts</h2>
+            <p class="text-muted">Поєднуємо правильний підбір, ціну та сервіс.</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-12 col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="mb-2"><i class="bi bi-shield-check fs-3" aria-hidden="true"></i></div>
+                        <h5 class="fw-semibold mb-2">Перевірені постачальники</h5>
+                        <p class="text-muted mb-0">Оригінал і сертифіковані аналоги, гарантія та повернення згідно закону.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="mb-2"><i class="bi bi-lightning-charge fs-3" aria-hidden="true"></i></div>
+                        <h5 class="fw-semibold mb-2">Швидка логістика</h5>
+                        <p class="text-muted mb-0">Відправка день-у-день, доставка по Україні будь-яким перевізником.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="mb-2"><i class="bi bi-chat-dots fs-3" aria-hidden="true"></i></div>
+                        <h5 class="fw-semibold mb-2">Підтримка експертів</h5>
+                        <p class="text-muted mb-0">Допоможемо підібрати по VIN, уникнути несумісності та зайвих витрат.</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
 
-<section class="py-5 fade-in">
+<!-- === ЯК ЦЕ ПРАЦЮЄ === -->
+<section class="py-5 bg-light">
     <div class="container">
-        <h2 class="fw-bold mb-4 text-center">Категорії запчастин</h2>
-        <div class="row g-4 d-flex justify-content-center align-items-center">
-            <?php $categories = [
-                ['name' => 'Двигун', 'img' => 'https://carfans.fr/wp-content/uploads/2024/03/lamborghini_v12_3.9l.webp'],
-                ['name' => 'Гальмівна система', 'img' => 'https://5.imimg.com/data5/SELLER/Default/2023/9/345366707/DE/WZ/LB/1820704/brake-pads-for-caliper-disc-brakes-1000x1000.jpg'],
-                ['name' => 'Ходова та рульове управління', 'img' => 'https://t2.gstatic.com/licensed-image?q=tbn:ANd9GcQX2TH4BKXbF5uhHFCrM55bwqP6cIp6oEDcad6mPOSB_wQxVZ9ds8UcTQI4RJqr-ifBqVWqw5K1YwxF7iVxBZg'],
-                ['name' => 'Електроніка', 'img' => 'https://assets.denso-am.eu/eyJidWNrZXQiOiJhc3NldHMuZGVuc28tYW0uY29tIiwia2V5IjoicHJvZHVjdGlvbi9wcm9kdWN0cy9BbGwtUk9UQVRJTkcvQWx0ZXJuYXRvci5qcGciLCJlZGl0cyI6eyJqcGVnIjp7InF1YWxpdHkiOjEwMCwicHJvZ3Jlc3NpdmUiOmZhbHNlLCJ0cmVsbGlzUXVhbnRpc2F0aW9uIjp0cnVlLCJvdmVyc2hvb3REZXJpbmdpbmciOnRydWUsIm9wdGltaXplU2NhbnMiOnRydWV9LCJyZXNpemUiOnsid2lkdGgiOjc0NCwiZml0IjoiY292ZXIifSwic2hhcnBlbiI6dHJ1ZX19'],
-                ['name' => 'Трансмісія', 'img' => 'https://img.freepik.com/premium-photo/vehicle-gearbox-white-background_431161-30274.jpg'],
-                ['name' => 'Кузовні деталі та салон', 'img' => 'https://avtokolya.com.ua/images/shop/category/resized/kuzov_380x380.jpg'],
-                ['name' => 'Інструменти та аксесуари', 'img' => 'https://i.pinimg.com/736x/e8/db/7b/e8db7bb6340c77440ee9f74b1c08b475.jpg'],
+        <div class="text-center mb-4">
+            <h2 class="fw-bold h3">Як це працює</h2>
+            <p class="text-muted">Три кроки до правильної запчастини.</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-12 col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <span class="badge bg-dark rounded-pill mb-2">1</span>
+                        <h5 class="fw-semibold mb-2">Знаходите деталь</h5>
+                        <p class="text-muted mb-0">Введіть артикул, VIN або назву — фільтруємо сумісні позиції.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <span class="badge bg-dark rounded-pill mb-2">2</span>
+                        <h5 class="fw-semibold mb-2">Оформлюєте замовлення</h5>
+                        <p class="text-muted mb-0">Обирайте зручну оплату та доставку, підтверджуємо наявність.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <span class="badge bg-dark rounded-pill mb-2">3</span>
+                        <h5 class="fw-semibold mb-2">Отримуєте швидко</h5>
+                        <p class="text-muted mb-0">Відправляємо того ж дня, надаємо ТТН та консультацію з установки.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- === ВІДГУКИ === -->
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold h3 mb-0">Відгуки клієнтів</h2>
+            <a href="/reviews" class="btn btn-outline-dark btn-sm">Усі відгуки</a>
+        </div>
+        <div class="row g-4">
+            <?php
+            $reviews = $reviews ?? [
+                ['name' => 'Олександр', 'text' => 'Швидко підібрали по VIN, доставка на наступний день. Рекомендую!', 'rating' => 5],
+                ['name' => 'Марина', 'text' => 'Взяла аналог — якість супер, ціна краща за офіціал.', 'rating' => 4.5],
+                ['name' => 'Ігор', 'text' => 'Чітка консультація та гарантія. Все підійшло.', 'rating' => 5],
             ];
-            foreach ($categories as $cat): ?> <div class="col-6 col-md-4 col-lg-3">
-                    <div class="card border-0 shadow-sm category-card overflow-hidden h-100">
-                        <div class="ratio ratio-1x1"> <img src="<?= $cat['img'] ?>" alt="<?= $cat['name'] ?>" class="w-100 h-100 object-fit-contain"> </div>
-                        <div class="card-body text-center bg-white">
-                            <h6 class="fw-semibold mb-0"><?= $cat['name'] ?></h6>
+            ?>
+            <?php foreach ($reviews as $r): ?>
+                <div class="col-12 col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center me-2" style="width:36px;height:36px;">
+                                    <span class="small"><?= mb_strtoupper(mb_substr($r['name'], 0, 1)) ?></span>
+                                </div>
+                                <strong><?= htmlspecialchars($r['name'], ENT_QUOTES, 'UTF-8') ?></strong>
+                            </div>
+                            <p class="mb-2 text-muted"><?= htmlspecialchars($r['text'], ENT_QUOTES, 'UTF-8') ?></p>
+                            <?php
+                            $rv = (float)$r['rating'];
+                            $full = (int)floor($rv);
+                            $half = ($rv - $full) >= 0.5 ? 1 : 0;
+                            $empty = 5 - $full - $half;
+                            ?>
+                            <div aria-label="Оцінка <?= number_format($rv, 1) ?> з 5">
+                                <?= str_repeat('<i class="bi bi-star-fill"></i>', $full) ?>
+                                <?= str_repeat('<i class="bi bi-star-half"></i>', $half) ?>
+                                <?= str_repeat('<i class="bi bi-star"></i>', $empty) ?>
+                                <small class="text-muted ms-2"><?= number_format($rv, 1) ?></small>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -147,7 +491,56 @@
     </div>
 </section>
 
+<!-- === ФІНАЛЬНИЙ CTA === -->
+<section class="py-5 text-center bg-light">
+    <div class="container">
+        <div class="p-4 p-md-5 rounded-4 border shadow-sm">
+            <h2 class="fw-bold h3 mb-2">Готові замовити?</h2>
+            <p class="text-muted mb-3">Спробуйте пошук за VIN або напишіть нам — допоможемо обрати оптимальний варіант.</p>
+            <div class="d-flex justify-content-center gap-2 flex-wrap">
+                <a href="#"
+                    class="btn btn-dark btn-lg px-4">Підібрати по VIN</a>
+                <a href="/contacts"
+                    class="btn btn-outline-dark btn-lg px-4">Зв’язатися з нами</a>
+            </div>
+        </div>
+    </div>
+</section>
+
 <?php include __DIR__ . '/../includes/footer.php'; ?>
+
+<!-- JSON-LD (як було) -->
+<?php
+$orgJson = [
+    "@context" => "https://schema.org",
+    "@type" => "Organization",
+    "name" => "AutoParts",
+    "url" => rtrim((isset($_SERVER['REQUEST_SCHEME']) ? $_SERVER['REQUEST_SCHEME'] : 'https') . '://' . ($_SERVER['HTTP_HOST'] ?? ''), '/'),
+    "logo" => "/assets/logo.png",
+    "sameAs" => ["/about", "/contacts"]
+];
+$breadcrumbs = ["@context" => "https://schema.org", "@type" => "BreadcrumbList", "itemListElement" => [
+    ["@type" => "ListItem", "position" => 1, "name" => "Головна", "item" => "/"]
+]];
+$productsLd = [];
+if (!empty($featured) && is_array($featured)) {
+    foreach ($featured as $p) {
+        $productsLd[] = [
+            "@type" => "Product",
+            "name" => $p['name'] ?? 'Товар',
+            "image" => $p['image_url'] ?? null,
+            "category" => $p['category_name'] ?? null,
+            "offers" => [
+                "@type" => "Offer",
+                "priceCurrency" => "UAH",
+                "price" => isset($p['price']) ? (float)$p['price'] : null,
+                "availability" => !empty($p['in_stock']) ? "https://schema.org/InStock" : "https://schema.org/PreOrder",
+                "url" => "/product/" . ($p['slug'] ?? '#')
+            ]
+        ];
+    }
+}
+?>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

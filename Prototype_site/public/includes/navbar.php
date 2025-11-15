@@ -4,6 +4,8 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 }
 
 $authUser = $_SESSION['user'] ?? null;
+$cartItems = $_SESSION['cart'] ?? [];
+$cartCount = (int) array_sum(is_array($cartItems) ? $cartItems : []);
 $csrfToken = function_exists('csrf_token') ? csrf_token() : '';
 ?>
 
@@ -14,54 +16,64 @@ $csrfToken = function_exists('csrf_token') ? csrf_token() : '';
             AutoParts
         </a>
 
-        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarGuest">
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <div class="collapse navbar-collapse" id="navbarGuest">
-            <ul class="navbar-nav ms-auto align-items-lg-center">
-
-                <li class="nav-item mx-lg-2 mb-2 mb-lg-0">
-                    <a href="/" class="nav-link d-flex align-items-center hover-underline">
+        <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+                <li class="nav-item">
+                    <a href="/" class="nav-link">
                         <i class="bi bi-house-door me-1"></i>Головна
                     </a>
                 </li>
-
-                <li class="nav-item position-relative mb-2 mb-lg-0" style="margin-left:8px; margin-right:24px;">
-                    <a href="/cart" class="nav-link d-flex align-items-center position-relative hover-underline">
+                <li class="nav-item">
+                    <a href="/catalog" class="nav-link">
+                        <i class="bi bi-grid me-1"></i>Каталог
+                    </a>
+                </li>
+                <?php if ($authUser): ?>
+                    <li class="nav-item">
+                        <a href="/profile" class="nav-link">
+                            <i class="bi bi-person-circle me-1"></i>Кабінет
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/orders" class="nav-link">
+                            <i class="bi bi-receipt me-1"></i>Мої замовлення
+                        </a>
+                    </li>
+                <?php endif; ?>
+                <li class="nav-item position-relative">
+                    <a href="/cart" class="nav-link d-flex align-items-center">
                         <i class="bi bi-cart3 me-1"></i>Кошик
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark">
-                            0
-                        </span>
+                        <span class="badge rounded-pill bg-warning text-dark ms-2"><?= $cartCount ?></span>
                     </a>
                 </li>
-
-                <li class="nav-item mx-lg-2 mb-2 mb-lg-0">
-                    <a href="/auth" class="btn btn-warning text-dark fw-semibold d-flex align-items-center px-3 py-1 rounded-pill shadow-sm">
-                        <i class="bi bi-box-arrow-in-right me-1"></i>Увійти
-                    </a>
-                </li>
-
-                <li class="nav-item dropdown ms-lg-2 z-3">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="languageDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-translate me-1 text-warning"></i>UA
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="languageDropdown">
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center" href="?lang=ua">
-                                <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1fa-1f1e6.svg" alt="UA" class="flag-icon me-2">
-                                Українська
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center" href="?lang=en">
-                                <img src="https://twemoji.maxcdn.com/v/latest/svg/1f1ec-1f1e7.svg" alt="EN" class="flag-icon me-2">
-                                English
-                            </a>
-                        </li>
-                    </ul>
-                </li>
+                <?php if ($authUser && in_array((int) ($authUser['role_id'] ?? 0), [1, 2], true)): ?>
+                    <li class="nav-item">
+                        <a href="/admin/products" class="nav-link text-warning">
+                            <i class="bi bi-speedometer2 me-1"></i>Адмін-панель
+                        </a>
+                    </li>
+                <?php endif; ?>
             </ul>
+
+            <div class="ms-lg-3 mt-3 mt-lg-0">
+                <?php if ($authUser): ?>
+                    <form action="/logout" method="POST" class="d-flex align-items-center gap-2">
+                        <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
+                        <span class="text-white-50 small">Вітаємо, <?= htmlspecialchars($authUser['login'], ENT_QUOTES, 'UTF-8') ?></span>
+                        <button type="submit" class="btn btn-outline-light btn-sm">
+                            Вихід
+                        </button>
+                    </form>
+                <?php else: ?>
+                    <a href="/auth" class="btn btn-warning text-dark fw-semibold">
+                        <i class="bi bi-box-arrow-in-right me-1"></i>Увійти / Реєстрація
+                    </a>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 </nav>
