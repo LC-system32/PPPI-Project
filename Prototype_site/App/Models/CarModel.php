@@ -6,41 +6,55 @@ use PDO;
 
 class CarModel extends Model
 {
-    public static function all(): array
+    public static function forBrand(string $brandName): array
     {
-        return self::query('SELECT * FROM car_models ORDER BY brand, model')->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        $stmt = self::db()->prepare(
+            'SELECT id, brand, model, generation, year_from, year_to
+             FROM car_models
+             WHERE brand = :brand
+             ORDER BY model, generation NULLS LAST, year_from NULLS FIRST'
+        );
+
+        $stmt->execute(['brand' => $brandName]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 
     public static function find(int $id): ?array
     {
-        $stmt = self::query('SELECT * FROM car_models WHERE id = :id LIMIT 1', ['id' => $id]);
+        $stmt = self::db()->prepare(
+            'SELECT id, brand, model, generation, year_from, year_to
+             FROM car_models
+             WHERE id = :id
+             LIMIT 1'
+        );
+        $stmt->execute(['id' => $id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return $row ?: null;
     }
 
-    public static function byIds(array $ids): array
+    public static function slugFor(array $carModel): string
     {
-        if (!$ids) {
-            return [];
+        $parts = [];
+
+        if (!empty($carModel['brand'])) {
+            $parts[] = (string) $carModel['brand'];
         }
 
-        $placeholders = implode(',', array_fill(0, count($ids), '?'));
-        $stmt = self::db()->prepare("SELECT * FROM car_models WHERE id IN ({$placeholders})");
-        $stmt->execute($ids);
+        if (!empty($carModel['model'])) {
+            $parts[] = (string) $carModel['model'];
+        }
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
-    }
-    public static function forBrand(string $brandName): array
-    {
-        $stmt = self::db()->prepare(
-            'SELECT DISTINCT model, generation, year_from, year_to
-             FROM car_models
-             WHERE brand = :brand
-             ORDER BY model, generation, year_from'
-        );
-        $stmt->execute(['brand' => $brandName]);
+        if (!empty($carModel['generation'])) {
+            $parts[] = (string) $carModel['generation'];
+        }
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        $text = strtolower(trim(implode(' ', $parts)));
+
+        $slug = preg_replace('/[^a-z0-9]+/i', '-', $text) ?? '';
+        $slug = trim($slug, '-');
+
+        return $slug !== '' ? $slug : 'model';
     }
 }

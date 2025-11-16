@@ -16,15 +16,15 @@ class HomeController extends Controller
 
     public function index(): void
     {
-        // Категорії
-        $categories = Category::topLevel(2);
-
-        // Рекомендовані товари
-        $featured = Product::paginate(1, 20)['items'] ?? [];
-
         // ⭐ Додаємо бренди — наприклад, максимум 6
         $brands = Brand::all();              // беремо всі
-        $brands = array_slice($brands, 0, 20); // обрізаємо до 6
+        $brands = array_slice($brands, 0, 24); // обрізаємо до 6
+        
+        // Категорії
+        $categories = Category::topLevel(22);
+        
+        // Рекомендовані товари
+        $featured = Product::paginate(1, 24)['items'] ?? [];
 
         // Передаємо у view
         $this->view('home', compact('categories', 'featured', 'brands'));

@@ -5,6 +5,7 @@ use App\Controllers\Admin\OrderController as AdminOrderController;
 use App\Controllers\Admin\ProductController as AdminProductController;
 use App\Controllers\AuthController;
 use App\Controllers\BrandController;
+use App\Controllers\CarModelController;
 use App\Controllers\CartController;
 use App\Controllers\CatalogController;
 use App\Controllers\FooterController;
@@ -35,6 +36,10 @@ Router::get('/product/{slug}', [CatalogController::class, 'product']);
 // Бренди
 Router::get('/brands', [BrandController::class, 'index']);
 Router::get('/brand/{slug}', [BrandController::class, 'show']);
+
+// Моделі авто
+Router::get('/brand/{brandSlug}/{modelSlug}', [CarModelController::class, 'showBySlug']);
+
 
 // Кошик
 Router::get('/cart', [CartController::class, 'index']);
@@ -79,4 +84,3 @@ Router::group('/admin', function () {
     Router::get('/orders/{id}', [AdminOrderController::class, 'show']);
     Router::post('/orders/{id}/status', [AdminOrderController::class, 'updateStatus']);
 });
-

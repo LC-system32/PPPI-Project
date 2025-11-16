@@ -150,7 +150,7 @@
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="fw-bold mb-0 h3">Популярні категорії запчастин</h2>
-            <a href="/catalog" class="btn btn-outline-dark btn-sm">Дивитися все</a>
+            <a href="/categories" class="btn btn-outline-dark btn-sm">Дивитися всі</a>
         </div>
 
         <?php if (!empty($categories) && is_array($categories)): ?>

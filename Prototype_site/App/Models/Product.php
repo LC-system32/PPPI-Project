@@ -68,6 +68,51 @@ class Product extends Model
         ];
     }
 
+    public static function paginateByCarModel(int $carModelId, int $page = 1, int $perPage = 12): array
+    {
+        $page = max($page, 1);
+        $perPage = max($perPage, 1);
+        $offset = ($page - 1) * $perPage;
+
+        $sql = "SELECT p.*, c.name AS category_name, b.name AS brand_name
+                FROM products p
+                JOIN product_car_model pcm ON pcm.product_id = p.id
+                LEFT JOIN categories c ON c.id = p.category_id
+                LEFT JOIN brands b ON b.id = p.brand_id
+                WHERE p.is_active = true
+                  AND pcm.car_model_id = :car_model_id
+                ORDER BY p.created_at DESC
+                LIMIT :limit OFFSET :offset";
+
+        $stmt = self::db()->prepare($sql);
+        $stmt->bindValue(':car_model_id', $carModelId, PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $items = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+        $countStmt = self::db()->prepare(
+            'SELECT COUNT(*)
+             FROM products p
+             JOIN product_car_model pcm ON pcm.product_id = p.id
+             WHERE p.is_active = true
+               AND pcm.car_model_id = :car_model_id'
+        );
+        $countStmt->bindValue(':car_model_id', $carModelId, PDO::PARAM_INT);
+        $countStmt->execute();
+        $total = (int) $countStmt->fetchColumn();
+        $pages = $total > 0 ? (int) ceil($total / $perPage) : 0;
+
+        return [
+            'items' => $items,
+            'page' => $page,
+            'perPage' => $perPage,
+            'total' => $total,
+            'pages' => $pages,
+        ];
+    }
+
     public static function findByCategory(int $categoryId, int $page = 1, int $perPage = 12): array
     {
         return self::findByCategories([$categoryId], $page, $perPage);

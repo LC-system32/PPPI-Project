@@ -2,11 +2,11 @@
 <?php include __DIR__ . '/../../includes/navbar.php'; ?>
 
 <?php
-$items   = $products['items']    ?? [];
-$page    = $products['page']     ?? 1;
-$perPage = $products['perPage']  ?? 12;
-$total   = $products['total']    ?? 0;
-$pages   = $products['pages']    ?? 1;
+$items   = $products['items']   ?? [];
+$page    = $products['page']    ?? 1;
+$perPage = $products['perPage'] ?? 12;
+$total   = $products['total']   ?? 0;
+$pages   = $products['pages']   ?? 1;
 ?>
 
 <section class="position-relative text-white overflow-hidden">
@@ -32,21 +32,20 @@ $pages   = $products['pages']    ?? 1;
             <?= htmlspecialchars($brand['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>
         </h1>
         <p class="lead text-white-50 mb-0" style="max-width: 640px;">
-            Запчастини від бренду <?= htmlspecialchars($brand['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>:
-            популярні позиції, актуальна наявність, офіційні канали постачання.
+            Запчастини <?= htmlspecialchars($brand['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>: популярні позиції, актуальна наявність
+            та офіційні канали постачання.
         </p>
     </div>
 </section>
 
 <section class="py-5 bg-body-tertiary">
     <div class="container">
-        <!-- Блок моделей авто -->
+        <!-- Моделі авто бренду -->
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
                 <p class="text-uppercase text-muted small mb-1">Моделі авто</p>
                 <h2 class="h4 fw-semibold mb-0">
-                    Моделі, для яких є запчастини
-                    <?= htmlspecialchars($brand['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>
+                    Моделі, для яких доступні запчастини <?= htmlspecialchars($brand['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>
                 </h2>
             </div>
         </div>
@@ -54,35 +53,54 @@ $pages   = $products['pages']    ?? 1;
         <?php if (!empty($carModels ?? [])): ?>
             <div class="row g-2 mb-4">
                 <?php foreach ($carModels as $cm): ?>
+                    <?php
+                    $fullNameParts = [];
+                    $fullNameParts[] = $cm['brand'] ?? $brand['name'] ?? '';
+                    $fullNameParts[] = $cm['model'] ?? '';
+                    if (!empty($cm['generation'])) {
+                        $fullNameParts[] = $cm['generation'];
+                    }
+                    $years = '';
+                    if (!empty($cm['year_from']) || !empty($cm['year_to'])) {
+                        $from = !empty($cm['year_from']) ? (int) $cm['year_from'] : null;
+                        $to = !empty($cm['year_to']) ? (int) $cm['year_to'] : null;
+                        $years = ($from ?? '...') . '–' . ($to ?? '...');
+                    }
+                    $fullName = trim(implode(' ', array_filter($fullNameParts)));
+
+                    $slugSource = strtolower($fullName);
+                    $modelSlug = preg_replace('/[^a-z0-9]+/i', '-', $slugSource) ?? '';
+                    $modelSlug = trim($modelSlug, '-');
+                    ?>
                     <div class="col-6 col-md-4 col-lg-3">
-                        <div class="border rounded-3 bg-white px-3 py-2 h-100">
-                            <div class="fw-semibold">
-                                <?= htmlspecialchars($cm['model'] ?? '', ENT_QUOTES, 'UTF-8') ?>
-                            </div>
-                            <?php if (!empty($cm['generation']) || !empty($cm['year_from']) || !empty($cm['year_to'])): ?>
-                                <div class="text-muted small">
-                                    <?= htmlspecialchars($cm['generation'] ?? '', ENT_QUOTES, 'UTF-8') ?>
-                                    <?php if (!empty($cm['year_from']) || !empty($cm['year_to'])): ?>
-                                        (<?= (int)($cm['year_from'] ?? 0) ?>–<?= !empty($cm['year_to']) ? (int)$cm['year_to'] : '...' ?>)
-                                    <?php endif; ?>
+                        <a href="/brand/<?= htmlspecialchars($brand['slug'] ?? '', ENT_QUOTES, 'UTF-8') ?>/<?= htmlspecialchars($modelSlug, ENT_QUOTES, 'UTF-8') ?>"
+                           class="text-decoration-none text-dark">
+                            <div class="border rounded-3 bg-white px-3 py-2 h-100">
+                                <div class="fw-semibold">
+                                    <?= htmlspecialchars($fullName, ENT_QUOTES, 'UTF-8') ?>
                                 </div>
-                            <?php endif; ?>
-                        </div>
+                                <?php if ($years !== ''): ?>
+                                    <div class="text-muted small">
+                                        (<?= htmlspecialchars($years, ENT_QUOTES, 'UTF-8') ?>)
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </a>
                     </div>
                 <?php endforeach; ?>
             </div>
         <?php else: ?>
             <div class="alert alert-secondary border-0 shadow-sm mb-4">
-                Для цьої марки поки немає прив’язаних моделей авто.
+                Для цього бренду поки немає прив’язаних моделей авто.
             </div>
         <?php endif; ?>
 
-        <!-- Блок товарів бренду -->
+        <!-- Товари бренду -->
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
                 <p class="text-uppercase text-muted small mb-1">Товари бренду</p>
                 <h2 class="h4 fw-semibold mb-0">
-                    Доступні товари для марки <?= htmlspecialchars($brand['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>
+                    Запчастини <?= htmlspecialchars($brand['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>
                 </h2>
             </div>
             <span class="text-muted small">Всього позицій: <?= (int) $total ?></span>
@@ -129,7 +147,7 @@ $pages   = $products['pages']    ?? 1;
             <?php endif; ?>
         <?php else: ?>
             <div class="alert alert-secondary border-0 shadow-sm">
-                Для цього бренду поки немає доступних товарів.
+                Для цього бренду товари поки не додані.
             </div>
         <?php endif; ?>
     </div>
