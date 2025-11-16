@@ -29,7 +29,7 @@ Router::post('/profile/password', [ProfileController::class, 'updatePassword']);
 // Каталог і категорії
 Router::get('/catalog', [CatalogController::class, 'index']);
 Router::get('/categories', [CatalogController::class, 'categories']);
-Router::get('/category/{slug}', [CatalogController::class, 'category']);
+Router::get('/categories/{slug}', [CatalogController::class, 'category']);
 Router::get('/product/{slug}', [CatalogController::class, 'product']);
 
 // Бренди

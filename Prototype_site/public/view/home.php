@@ -70,15 +70,16 @@
         </div>
 
         <?php if (!empty($brands) && is_array($brands)): ?>
-            <?php $brandsPerSlide = 6; $brandsCount = count($brands); ?>
+            <?php $brandsPerSlide = 6;
+            $brandsCount = count($brands); ?>
 
             <div class="d-flex align-items-center">
                 <!-- Ліва кнопка -->
                 <button class="btn btn-outline-secondary me-2 shadow-sm"
-                        type="button"
-                        data-bs-target="#brandsCarousel"
-                        data-bs-slide="prev"
-                        aria-label="Попередні бренди">
+                    type="button"
+                    data-bs-target="#brandsCarousel"
+                    data-bs-slide="prev"
+                    aria-label="Попередні бренди">
                     <i class="bi bi-chevron-left"></i>
                 </button>
 
@@ -97,31 +98,31 @@
                             ?>
                                 <div class="carousel-item<?= $activeClass; ?>">
                                     <div class="row g-3 justify-content-start">
-                            <?php endif; ?>
+                                    <?php endif; ?>
 
-                                        <div class="col-6 col-md-4 col-lg-2">
-                                            <a href="/brand/<?= $brandSlug ?>" class="text-decoration-none">
-                                                <div class="card text-center border-0 shadow-sm py-3 h-100 rounded-4 bg-white">
-                                                    <?php if ($brandLogo): ?>
-                                                        <img src="<?= htmlspecialchars($brandLogo, ENT_QUOTES, 'UTF-8') ?>"
-                                                             alt="<?= $brandName ?> логотип"
-                                                             class="img-fluid img-thumbnail rounded bg-white p-1 mx-auto mb-2"
-                                                             loading="lazy"
-                                                             style="max-height:42px; width:auto;">
-                                                    <?php else: ?>
-                                                        <div class="rounded-circle bg-dark text-white mx-auto mb-2 d-flex align-items-center justify-content-center"
-                                                             style="width:42px;height:42px;">
-                                                            <span class="fw-bold"><?= mb_strtoupper(mb_substr($brandName, 0, 1)) ?></span>
-                                                        </div>
-                                                    <?php endif; ?>
-                                                    <h6 class="fw-semibold mb-0 text-dark"><?= $brandName ?></h6>
-                                                </div>
-                                            </a>
-                                        </div>
+                                    <div class="col-6 col-md-4 col-lg-2">
+                                        <a href="/brand/<?= $brandSlug ?>" class="text-decoration-none">
+                                            <div class="card text-center border-0 shadow-sm py-3 h-100 rounded-4 bg-white">
+                                                <?php if ($brandLogo): ?>
+                                                    <img src="<?= htmlspecialchars($brandLogo, ENT_QUOTES, 'UTF-8') ?>"
+                                                        alt="<?= $brandName ?> логотип"
+                                                        class="img-fluid img-thumbnail rounded bg-white p-1 mx-auto mb-2"
+                                                        loading="lazy"
+                                                        style="max-height:42px; width:auto;">
+                                                <?php else: ?>
+                                                    <div class="rounded-circle bg-dark text-white mx-auto mb-2 d-flex align-items-center justify-content-center"
+                                                        style="width:42px;height:42px;">
+                                                        <span class="fw-bold"><?= mb_strtoupper(mb_substr($brandName, 0, 1)) ?></span>
+                                                    </div>
+                                                <?php endif; ?>
+                                                <h6 class="fw-semibold mb-0 text-dark"><?= $brandName ?></h6>
+                                            </div>
+                                        </a>
+                                    </div>
 
-                            <?php
-                            $isLastInSlide = ($i % $brandsPerSlide === $brandsPerSlide - 1) || ($i === $brandsCount - 1);
-                            if ($isLastInSlide): ?>
+                                    <?php
+                                    $isLastInSlide = ($i % $brandsPerSlide === $brandsPerSlide - 1) || ($i === $brandsCount - 1);
+                                    if ($isLastInSlide): ?>
                                     </div>
                                 </div>
                             <?php endif; ?>
@@ -132,10 +133,10 @@
 
                 <!-- Права кнопка -->
                 <button class="btn btn-outline-secondary ms-2 shadow-sm"
-                        type="button"
-                        data-bs-target="#brandsCarousel"
-                        data-bs-slide="next"
-                        aria-label="Наступні бренди">
+                    type="button"
+                    data-bs-target="#brandsCarousel"
+                    data-bs-slide="next"
+                    aria-label="Наступні бренди">
                     <i class="bi bi-chevron-right"></i>
                 </button>
             </div>
@@ -154,15 +155,16 @@
         </div>
 
         <?php if (!empty($categories) && is_array($categories)): ?>
-            <?php $catsPerSlide = 4; $catsCount = count($categories); ?>
+            <?php $catsPerSlide = 4;
+            $catsCount = count($categories); ?>
 
             <div class="d-flex align-items-center">
                 <!-- Ліва кнопка -->
                 <button class="btn btn-outline-secondary me-2 shadow-sm"
-                        type="button"
-                        data-bs-target="#categoriesCarousel"
-                        data-bs-slide="prev"
-                        aria-label="Попередні категорії">
+                    type="button"
+                    data-bs-target="#categoriesCarousel"
+                    data-bs-slide="prev"
+                    aria-label="Попередні категорії">
                     <i class="bi bi-chevron-left"></i>
                 </button>
 
@@ -183,33 +185,33 @@
                             ?>
                                 <div class="carousel-item<?= $activeClass; ?>">
                                     <div class="row g-4">
-                            <?php endif; ?>
+                                    <?php endif; ?>
 
-                                        <div class="col-6 col-md-3">
-                                            <a href="/category/<?= $catSlug ?>" class="text-decoration-none text-dark" aria-label="Категорія: <?= $catName ?>">
-                                                <div class="card border-0 shadow-sm h-100 rounded-4 bg-white">
-                                                    <div class="card-body d-flex flex-column">
-                                                        <div class="mb-2">
-                                                            <?php if ($catIcon): ?>
-                                                                <img src="<?= htmlspecialchars($catIcon, ENT_QUOTES, 'UTF-8') ?>"
-                                                                     alt="Іконка <?= $catName ?>" loading="lazy"
-                                                                     class="img-fluid"
-                                                                     style="height:28px;width:auto;">
-                                                            <?php else: ?>
-                                                                <i class="bi bi-grid fs-4" aria-hidden="true"></i>
-                                                            <?php endif; ?>
-                                                        </div>
-                                                        <h5 class="card-title fw-semibold mb-2"><?= $catName ?></h5>
-                                                        <p class="text-muted small mb-3"><?= $catDesc ?></p>
-                                                        <span class="btn btn-dark btn-sm px-3 py-2 fw-semibold shadow-sm w-100 mt-auto">Переглянути</span>
+                                    <div class="col-6 col-md-3">
+                                        <a href="/categories/<?= $catSlug ?>" class="text-decoration-none text-dark" aria-label="Категорія: <?= $catName ?>">
+                                            <div class="card border-0 shadow-sm h-100 rounded-4 bg-white">
+                                                <div class="card-body d-flex flex-column">
+                                                    <div class="mb-2">
+                                                        <?php if ($catIcon): ?>
+                                                            <img src="<?= htmlspecialchars($catIcon, ENT_QUOTES, 'UTF-8') ?>"
+                                                                alt="Іконка <?= $catName ?>" loading="lazy"
+                                                                class="img-fluid"
+                                                                style="height:28px;width:auto;">
+                                                        <?php else: ?>
+                                                            <i class="bi bi-grid fs-4" aria-hidden="true"></i>
+                                                        <?php endif; ?>
                                                     </div>
+                                                    <h5 class="card-title fw-semibold mb-2"><?= $catName ?></h5>
+                                                    <p class="text-muted small mb-3"><?= $catDesc ?></p>
+                                                    <span class="btn btn-dark btn-sm px-3 py-2 fw-semibold shadow-sm w-100 mt-auto">Переглянути</span>
                                                 </div>
-                                            </a>
-                                        </div>
+                                            </div>
+                                        </a>
+                                    </div>
 
-                            <?php
-                            $isLastInSlide = ($i % $catsPerSlide === $catsPerSlide - 1) || ($i === $catsCount - 1);
-                            if ($isLastInSlide): ?>
+                                    <?php
+                                    $isLastInSlide = ($i % $catsPerSlide === $catsPerSlide - 1) || ($i === $catsCount - 1);
+                                    if ($isLastInSlide): ?>
                                     </div>
                                 </div>
                             <?php endif; ?>
@@ -220,10 +222,10 @@
 
                 <!-- Права кнопка -->
                 <button class="btn btn-outline-secondary ms-2 shadow-sm"
-                        type="button"
-                        data-bs-target="#categoriesCarousel"
-                        data-bs-slide="next"
-                        aria-label="Наступні категорії">
+                    type="button"
+                    data-bs-target="#categoriesCarousel"
+                    data-bs-slide="next"
+                    aria-label="Наступні категорії">
                     <i class="bi bi-chevron-right"></i>
                 </button>
             </div>
@@ -242,15 +244,16 @@
         </div>
 
         <?php if (!empty($featured) && is_array($featured)): ?>
-            <?php $productsPerSlide = 4; $prodCount = count($featured); ?>
+            <?php $productsPerSlide = 4;
+            $prodCount = count($featured); ?>
 
             <div class="d-flex align-items-center">
                 <!-- Ліва кнопка -->
                 <button class="btn btn-outline-secondary me-2 shadow-sm"
-                        type="button"
-                        data-bs-target="#featuredCarousel"
-                        data-bs-slide="prev"
-                        aria-label="Попередні товари">
+                    type="button"
+                    data-bs-target="#featuredCarousel"
+                    data-bs-slide="prev"
+                    aria-label="Попередні товари">
                     <i class="bi bi-chevron-left"></i>
                 </button>
 
@@ -274,78 +277,78 @@
                             ?>
                                 <div class="carousel-item<?= $activeClass; ?>">
                                     <div class="row g-4">
-                            <?php endif; ?>
+                                    <?php endif; ?>
 
-                                        <div class="col-6 col-md-3" itemprop="itemListElement" itemscope itemtype="https://schema.org/Product">
-                                            <div class="card border-0 shadow-sm h-100 rounded-4 bg-white">
+                                    <div class="col-6 col-md-3" itemprop="itemListElement" itemscope itemtype="https://schema.org/Product">
+                                        <div class="card border-0 shadow-sm h-100 rounded-4 bg-white">
 
-                                                <?php if ($pImg): ?>
-                                                    <a href="/product/<?= $pSlug ?>" class="ratio ratio-4x3">
-                                                        <img src="<?= htmlspecialchars($pImg, ENT_QUOTES, 'UTF-8') ?>"
-                                                             class="card-img-top rounded-top"
-                                                             alt="<?= $pName ?>" loading="lazy"
-                                                             style="object-fit:cover; border-top-left-radius:inherit;border-top-right-radius:inherit;">
-                                                    </a>
-                                                <?php else: ?>
-                                                    <a href="/product/<?= $pSlug ?>" class="ratio ratio-4x3 bg-light d-flex align-items-center justify-content-center text-muted text-decoration-none">
-                                                        <i class="bi bi-image fs-3" aria-hidden="true"></i>
-                                                    </a>
+                                            <?php if ($pImg): ?>
+                                                <a href="/product/<?= $pSlug ?>" class="ratio ratio-4x3">
+                                                    <img src="<?= htmlspecialchars($pImg, ENT_QUOTES, 'UTF-8') ?>"
+                                                        class="card-img-top rounded-top"
+                                                        alt="<?= $pName ?>" loading="lazy"
+                                                        style="object-fit:cover; border-top-left-radius:inherit;border-top-right-radius:inherit;">
+                                                </a>
+                                            <?php else: ?>
+                                                <a href="/product/<?= $pSlug ?>" class="ratio ratio-4x3 bg-light d-flex align-items-center justify-content-center text-muted text-decoration-none">
+                                                    <i class="bi bi-image fs-3" aria-hidden="true"></i>
+                                                </a>
+                                            <?php endif; ?>
+
+                                            <div class="card-body d-flex flex-column">
+                                                <meta itemprop="category" content="<?= $pCat ?>">
+                                                <a href="/product/<?= $pSlug ?>" class="text-decoration-none text-dark">
+                                                    <h5 class="fw-semibold mb-1" itemprop="name"><?= $pName ?></h5>
+                                                </a>
+                                                <p class="text-muted small mb-2"><?= $pCat ?></p>
+
+                                                <?php if ($pRating !== null): ?>
+                                                    <div class="d-flex align-items-center mb-2" itemprop="aggregateRating" itemscope itemtype="https://schema.org/AggregateRating">
+                                                        <meta itemprop="ratingValue" content="<?= max(0, min(5, $pRating)) ?>">
+                                                        <?php if ($pReviews !== null): ?>
+                                                            <meta itemprop="reviewCount" content="<?= $pReviews ?>">
+                                                        <?php endif; ?>
+                                                        <div class="me-2 text-warning" aria-label="Рейтинг <?= number_format($pRating, 1) ?> з 5">
+                                                            <?php
+                                                            $full  = (int)floor($pRating);
+                                                            $half  = ($pRating - $full) >= 0.5 ? 1 : 0;
+                                                            $empty = 5 - $full - $half;
+                                                            echo str_repeat('<i class="bi bi-star-fill me-1"></i>', $full);
+                                                            echo str_repeat('<i class="bi bi-star-half me-1"></i>', $half);
+                                                            echo str_repeat('<i class="bi bi-star me-1"></i>', $empty);
+                                                            ?>
+                                                        </div>
+                                                        <small class="text-muted">
+                                                            <?= number_format($pRating, 1) ?>
+                                                            <?= $pReviews ? ' · ' . $pReviews . ' відгуків' : '' ?>
+                                                        </small>
+                                                    </div>
                                                 <?php endif; ?>
 
-                                                <div class="card-body d-flex flex-column">
-                                                    <meta itemprop="category" content="<?= $pCat ?>">
-                                                    <a href="/product/<?= $pSlug ?>" class="text-decoration-none text-dark">
-                                                        <h5 class="fw-semibold mb-1" itemprop="name"><?= $pName ?></h5>
-                                                    </a>
-                                                    <p class="text-muted small mb-2"><?= $pCat ?></p>
-
-                                                    <?php if ($pRating !== null): ?>
-                                                        <div class="d-flex align-items-center mb-2" itemprop="aggregateRating" itemscope itemtype="https://schema.org/AggregateRating">
-                                                            <meta itemprop="ratingValue" content="<?= max(0, min(5, $pRating)) ?>">
-                                                            <?php if ($pReviews !== null): ?>
-                                                                <meta itemprop="reviewCount" content="<?= $pReviews ?>">
-                                                            <?php endif; ?>
-                                                            <div class="me-2 text-warning" aria-label="Рейтинг <?= number_format($pRating, 1) ?> з 5">
-                                                                <?php
-                                                                $full  = (int)floor($pRating);
-                                                                $half  = ($pRating - $full) >= 0.5 ? 1 : 0;
-                                                                $empty = 5 - $full - $half;
-                                                                echo str_repeat('<i class="bi bi-star-fill me-1"></i>', $full);
-                                                                echo str_repeat('<i class="bi bi-star-half me-1"></i>', $half);
-                                                                echo str_repeat('<i class="bi bi-star me-1"></i>', $empty);
-                                                                ?>
-                                                            </div>
-                                                            <small class="text-muted">
-                                                                <?= number_format($pRating, 1) ?>
-                                                                <?= $pReviews ? ' · ' . $pReviews . ' відгуків' : '' ?>
-                                                            </small>
-                                                        </div>
+                                                <p class="fw-bold fs-5 mb-3" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+                                                    <?php if ($pPrice !== null): ?>
+                                                        <meta itemprop="priceCurrency" content="UAH">
+                                                        <span itemprop="price"><?= number_format($pPrice, 2, '.', ' ') ?></span> ₴
+                                                    <?php else: ?>
+                                                        <span class="text-muted">Ціну уточнюйте</span>
                                                     <?php endif; ?>
+                                                </p>
 
-                                                    <p class="fw-bold fs-5 mb-3" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
-                                                        <?php if ($pPrice !== null): ?>
-                                                            <meta itemprop="priceCurrency" content="UAH">
-                                                            <span itemprop="price"><?= number_format($pPrice, 2, '.', ' ') ?></span> ₴
-                                                        <?php else: ?>
-                                                            <span class="text-muted">Ціну уточнюйте</span>
-                                                        <?php endif; ?>
-                                                    </p>
-
-                                                    <div class="d-flex align-items-center justify-content-between mb-3">
-                                                        <span class="badge <?= $pInStock ? 'text-bg-success' : 'text-bg-secondary' ?> rounded-pill small">
-                                                            <?= $pInStock ? 'В наявності' : 'Під замовлення' ?>
-                                                        </span>
-                                                    </div>
-                                                    <div class="d-grid mt-auto">
-                                                        <a href="/product/<?= $pSlug ?>" class="btn btn-dark btn-sm px-3 py-2 fw-semibold shadow-sm w-100">До товару</a>
-                                                    </div>
+                                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                                    <span class="badge <?= $pInStock ? 'text-bg-success' : 'text-bg-secondary' ?> rounded-pill small">
+                                                        <?= $pInStock ? 'В наявності' : 'Під замовлення' ?>
+                                                    </span>
+                                                </div>
+                                                <div class="d-grid mt-auto">
+                                                    <a href="/product/<?= $pSlug ?>" class="btn btn-dark btn-sm px-3 py-2 fw-semibold shadow-sm w-100">До товару</a>
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
 
-                            <?php
-                            $isLastInSlide = ($i % $productsPerSlide === $productsPerSlide - 1) || ($i === $prodCount - 1);
-                            if ($isLastInSlide): ?>
+                                    <?php
+                                    $isLastInSlide = ($i % $productsPerSlide === $productsPerSlide - 1) || ($i === $prodCount - 1);
+                                    if ($isLastInSlide): ?>
                                     </div>
                                 </div>
                             <?php endif; ?>
@@ -356,10 +359,10 @@
 
                 <!-- Права кнопка -->
                 <button class="btn btn-outline-secondary ms-2 shadow-sm"
-                        type="button"
-                        data-bs-target="#featuredCarousel"
-                        data-bs-slide="next"
-                        aria-label="Наступні товари">
+                    type="button"
+                    data-bs-target="#featuredCarousel"
+                    data-bs-slide="next"
+                    aria-label="Наступні товари">
                     <i class="bi bi-chevron-right"></i>
                 </button>
             </div>
@@ -413,7 +416,6 @@
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="fw-bold h3 mb-0">Відгуки клієнтів</h2>
-            <a href="/reviews" class="btn btn-outline-dark btn-sm fw-semibold shadow-sm">Усі відгуки</a>
         </div>
         <div class="row g-4">
             <?php

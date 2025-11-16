@@ -200,7 +200,7 @@ class Category extends Model
     public static function topLevel(int $limit = 8): array
     {
         $stmt = self::db()->prepare(
-            'SELECT * FROM categories WHERE parent_id IS NOT NULL ORDER BY name LIMIT :limit'
+            'SELECT * FROM categories WHERE parent_id IS NULL ORDER BY name LIMIT :limit'
         );
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
         $stmt->execute();

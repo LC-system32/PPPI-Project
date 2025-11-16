@@ -257,7 +257,7 @@ $baseParams = array_filter($baseParams, static fn($v) => $v !== null && $v !== '
                             $prodCount = (int)($cat['products_count'] ?? 0);
                             ?>
                             <div class="col-12 col-sm-6 col-lg-4">
-                                <a href="/category/<?= $catSlug ?>" class="text-decoration-none text-dark d-block h-100">
+                                <a href="/categories/<?= $catSlug ?>" class="text-decoration-none text-dark d-block h-100">
                                     <div class="card h-100 rounded-4 border-0 shadow-sm bg-white">
                                         <div class="card-body d-flex flex-column">
 

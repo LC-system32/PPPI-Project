@@ -12,35 +12,34 @@ class CatalogController extends Controller
     public function index(): void
     {
         $filters = $this->sanitize($_GET);
-        $page    = max((int) ($filters['page'] ?? 1), 1);
+        $page    = max((int)($filters['page'] ?? 1), 1);
 
-        // Підготовка категорій: вибрана + всі нащадки
+        // Підготовка категорій: вибрана + всі її нащадки
         $categoryIds = null;
         $categoryId  = null;
         if (!empty($filters['category_id'])) {
-            $categoryId  = (int) $filters['category_id'];
+            $categoryId  = (int)$filters['category_id'];
             $categoryIds = Category::getDescendantIds($categoryId);
         }
 
-        // Фільтри каталогу: пошук, категорія, бренд, наявність, ціна, сортування
+        // Фільтри каталогу товарів
         $query = [
             'category_ids' => $categoryIds,
-            'brand_id'     => !empty($filters['brand_id']) ? (int) $filters['brand_id'] : null,
+            'brand_id'     => !empty($filters['brand_id']) ? (int)$filters['brand_id'] : null,
             'keyword'      => $filters['q'] ?? null,
             'in_stock'     => !empty($filters['in_stock']) ? 1 : null,
             'price_min'    => $filters['price_min'] ?? null,
             'price_max'    => $filters['price_max'] ?? null,
             'sort'         => $filters['sort'] ?? null,
         ];
-
-        $query = array_filter($query, static fn ($value) => $value !== null && $value !== '');
+        $query = array_filter($query, static fn($v) => $v !== null && $v !== '');
 
         $products   = Product::paginate($page, 12, $query);
         $categories = Category::allWithProductCounts();
         $brands     = Brand::allForProducts();
 
         if ($categoryId !== null) {
-            $filters['category_id'] = (string) $categoryId;
+            $filters['category_id'] = (string)$categoryId;
         }
 
         $this->view('catalog/index', [
@@ -53,15 +52,15 @@ class CatalogController extends Controller
 
     public function categories(): void
     {
-        // Усі категорії з лічильниками товарів
+        // Всі категорії з підрахунком товарів
         $categories = Category::allWithProductCounts();
 
-        // На /categories показуємо тільки верхньорівневі категорії (без підкатегорій)
+        // На /categories показуємо лише кореневі
         $topLevel = array_values(array_filter($categories, static function (array $cat): bool {
             return empty($cat['parent_id']);
         }));
 
-        // Вʼюшка працює зі змінною $brands, тому підставляємо туди категорії
+        // Вʼюшка очікує змінну $brands — підставляємо категорії
         $this->view('catalog/categories', [
             'brands' => $topLevel,
         ]);
@@ -76,10 +75,20 @@ class CatalogController extends Controller
             return;
         }
 
+        $filters     = $this->sanitize($_GET);
         $breadcrumbs = $this->buildBreadcrumbs($category);
 
+        // Root‑категорія: показуємо її підкатегорії з можливістю фільтрації/сортування
         if (Category::isRoot($category)) {
-            $children = Category::getChildren((int) $category['id']);
+            $children = Category::getChildren((int)$category['id']);
+
+            // Підрахунок кількості товарів у кожній дочірній категорії (з урахуванням нащадків)
+            foreach ($children as &$child) {
+                $childIds  = Category::getDescendantIds((int)($child['id'] ?? 0));
+                $childPage = Product::findByCategories($childIds, 1, 1);
+                $child['products_count'] = (int)($childPage['total'] ?? 0);
+            }
+            unset($child);
 
             $this->view('catalog/category-root', [
                 'category'    => $category,
@@ -90,19 +99,29 @@ class CatalogController extends Controller
             return;
         }
 
-        $page = max((int) ($_GET['page'] ?? 1), 1);
+        // Leaf‑категорія: товари в ній з фільтрами
+        $page = max((int)($filters['page'] ?? 1), 1);
 
-        // Усі нащадки обраної категорії
-        $categoryIds  = Category::getDescendantIds((int) $category['id']);
-        $productsPage = Product::findByCategories($categoryIds, $page, 12);
+        $categoryIds = Category::getDescendantIds((int)$category['id']);
+        $query = [
+            'category_ids' => $categoryIds,
+            'keyword'      => $filters['q'] ?? null,
+            'in_stock'     => !empty($filters['in_stock']) ? 1 : null,
+            'price_min'    => $filters['price_min'] ?? null,
+            'price_max'    => $filters['price_max'] ?? null,
+            'sort'         => $filters['sort'] ?? null,
+        ];
+        $query = array_filter($query, static fn($v) => $v !== null && $v !== '');
 
-        $parent = Category::getParent((int) $category['id']);
+        $productsPage = Product::paginate($page, 12, $query);
+        $parent       = Category::getParent((int)$category['id']);
 
         $this->view('catalog/category-leaf', [
             'category'     => $category,
             'parent'       => $parent,
             'breadcrumbs'  => $breadcrumbs,
             'productsPage' => $productsPage,
+            'filters'      => $filters,
         ]);
     }
 
@@ -130,7 +149,7 @@ class CatalogController extends Controller
                 break;
             }
 
-            $current = Category::getParent((int) $current['id']);
+            $current = Category::getParent((int)$current['id']);
         }
 
         return $trail;
