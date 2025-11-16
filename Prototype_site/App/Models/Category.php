@@ -37,6 +37,76 @@ class Category extends Model
         return $tree;
     }
 
+    /**
+     * Повертає всі категорії з підрахованою кількістю товарів у кожній
+     * (з урахуванням дочірніх категорій) та простим прапорцем популярності.
+     */
+    public static function allWithProductCounts(): array
+    {
+        $db = self::db();
+
+        $categories = self::all();
+        if (!$categories) {
+            return [];
+        }
+
+        // Побудова карти категорій та списку дітей
+        $byId = [];
+        $children = [];
+        foreach ($categories as $category) {
+            $id = (int) $category['id'];
+            $category['products_count'] = 0;
+            $category['is_popular'] = false;
+            $byId[$id] = $category;
+            $children[$id] = [];
+        }
+
+        foreach ($categories as $category) {
+            $id = (int) $category['id'];
+            $parentId = !empty($category['parent_id']) ? (int) $category['parent_id'] : null;
+            if ($parentId !== null && isset($children[$parentId])) {
+                $children[$parentId][] = $id;
+            }
+        }
+
+        // Кількість товарів напряму в кожній категорії
+        $direct = [];
+        $stmt = $db->query(
+            'SELECT category_id, COUNT(*) AS cnt
+             FROM products
+             WHERE is_active = TRUE
+             GROUP BY category_id'
+        );
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) ?: [] as $row) {
+            $direct[(int) $row['category_id']] = (int) $row['cnt'];
+        }
+
+        // Рекурсивно рахуємо сумарну кількість товарів з урахуванням дочірніх
+        $cache = [];
+        $compute = function (int $id) use (&$compute, &$cache, $children, $direct): int {
+            if (isset($cache[$id])) {
+                return $cache[$id];
+            }
+
+            $sum = $direct[$id] ?? 0;
+            foreach ($children[$id] ?? [] as $childId) {
+                $sum += $compute($childId);
+            }
+
+            return $cache[$id] = $sum;
+        };
+
+        foreach ($byId as $id => &$category) {
+            $count = $compute($id);
+            $category['products_count'] = $count;
+            // Простий критерій популярності: є хоча б кілька товарів
+            $category['is_popular'] = $count >= 10;
+        }
+        unset($category);
+
+        return array_values($byId);
+    }
+
     public static function findBySlug(string $slug): ?array
     {
         $stmt = self::query('SELECT * FROM categories WHERE slug = :slug LIMIT 1', ['slug' => $slug]);
@@ -130,7 +200,7 @@ class Category extends Model
     public static function topLevel(int $limit = 8): array
     {
         $stmt = self::db()->prepare(
-            'SELECT * FROM categories WHERE parent_id IS NULL ORDER BY name LIMIT :limit'
+            'SELECT * FROM categories WHERE parent_id IS NOT NULL ORDER BY name LIMIT :limit'
         );
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
         $stmt->execute();

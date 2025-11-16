@@ -2,164 +2,343 @@
 include __DIR__ . '/../../includes/header.php';
 include __DIR__ . '/../../includes/navbar.php';
 
-$items = $products['items'] ?? [];
-$page = $products['page'] ?? 1;
-$perPage = $products['perPage'] ?? 12;
-$total = $products['total'] ?? 0;
-$totalPages = $perPage ? (int) ceil($total / $perPage) : 1;
-$csrf = csrf_token();
+// Розпаковуємо структуру пагінації продуктів
+$items   = $products['items']   ?? [];
+$page    = (int)($products['page']    ?? 1);
+$perPage = (int)($products['perPage'] ?? 12);
+$total   = (int)($products['total']   ?? 0);
+$pages   = (int)($products['pages']   ?? 1);
+
+$filters          = $filters ?? [];
+$currentQuery     = trim((string)($filters['q'] ?? ''));
+$currentCategory  = (string)($filters['category_id'] ?? '');
+$currentBrand     = (string)($filters['brand_id'] ?? '');
+$currentInStock   = !empty($filters['in_stock']) ? '1' : '';
+$currentSort      = (string)($filters['sort'] ?? '');
+$currentMinPrice  = (string)($filters['price_min'] ?? '');
+$currentMaxPrice  = (string)($filters['price_max'] ?? '');
+
+// Сортування
+$sortLabels = [
+    ''           => 'За замовчуванням',
+    'price_asc'  => 'Ціна: від дешевих до дорогих',
+    'price_desc' => 'Ціна: від дорогих до дорогих',
+    'name_asc'   => 'Назва: A–Z',
+    'name_desc'  => 'Назва: Z–A',
+    'newest'     => 'Нові надходження',
+];
+$sortKey          = $currentSort;
+$currentSortLabel = $sortLabels[$sortKey] ?? $sortKey;
+
+// Базові параметри для побудови URL (пагінація / чіпси)
+$baseParams = [
+    'q'           => $currentQuery     ?: null,
+    'category_id' => $currentCategory  ?: null,
+    'brand_id'    => $currentBrand     ?: null,
+    'in_stock'    => $currentInStock   ?: null,
+    'price_min'   => $currentMinPrice  ?: null,
+    'price_max'   => $currentMaxPrice  ?: null,
+    'sort'        => $currentSort      ?: null,
+];
+$baseParams = array_filter($baseParams, static fn($v) => $v !== null && $v !== '');
+
+// Хелпер для побудови URL з параметрами
+$buildQuery = static function (array $params): string {
+    $query = http_build_query(array_filter($params, static function ($v) {
+        return $v !== '' && $v !== null;
+    }));
+    return $query;
+};
+
+$buildPageUrl = static function (int $page, array $baseParams, callable $buildQuery): string {
+    $params         = $baseParams;
+    $params['page'] = $page;
+    $query          = $buildQuery($params);
+
+    return $query ? ('/catalog?' . $query) : '/catalog?page=' . $page;
+};
+
+// Чіпси активних фільтрів
+$chips = [];
+if ($currentQuery !== '') {
+    $chips['q'] = 'Пошук: ' . $currentQuery;
+}
+if ($currentCategory !== '') {
+    $chips['category_id'] = 'Категорія';
+}
+if ($currentBrand !== '') {
+    $chips['brand_id'] = 'Бренд запчастини';
+}
+if ($currentInStock === '1') {
+    $chips['in_stock'] = 'Тільки в наявності';
+}
+if ($currentMinPrice !== '' || $currentMaxPrice !== '') {
+    $chips['price'] = 'Ціна: ' . ($currentMinPrice !== '' ? $currentMinPrice : '0') . '–' . ($currentMaxPrice !== '' ? $currentMaxPrice : '∞');
+}
+if ($currentSort !== '') {
+    $chips['sort'] = $currentSortLabel;
+}
 ?>
 
-<section class="position-relative text-white overflow-hidden">
-    <div class="ratio" style="--bs-aspect-ratio: 32%;">
-        <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&q=80"
-             class="w-100 h-100 object-fit-cover" alt="Автозапчастини фон">
-    </div>
-    <div class="position-absolute top-0 start-0 w-100 h-100"
-         style="background: linear-gradient(120deg, rgba(18,18,18,.85), rgba(30,30,30,.55));"></div>
-    <div class="container position-absolute top-50 start-50 translate-middle text-center text-lg-start">
-        <p class="text-uppercase text-white-50 mb-2">Преміальний маркетплейс автозапчастин</p>
-        <h1 class="display-4 fw-bold mb-3">Знайди точну деталь для свого авто</h1>
-        <p class="lead text-white-50 mb-0">
-            Понад <?= number_format($total) ?> позицій у каталозі, актуальна наявність і швидка доставка
-        </p>
-    </div>
-</section>
-
 <section class="py-5 bg-body-tertiary">
-    <div class="container">
+    <div class="container" style="max-width: 1200px;">
         <div class="row gy-4">
+
+            <!-- Заголовок каталогу -->
             <div class="col-12">
-                <div class="card border-0 shadow-lg">
-                    <div class="card-body p-4 p-lg-5">
-                        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start gap-4 mb-4">
-                            <div>
-                                <p class="text-uppercase text-muted small mb-1">Фільтри каталогу</p>
-                                <h2 class="h3 fw-semibold mb-0">Знайдіть потрібну позицію за кілька секунд</h2>
-                            </div>
-                            <div class="text-lg-end">
-                                <p class="text-muted small mb-1">Знайдено товарів</p>
-                                <p class="display-6 fw-bold mb-0"><?= number_format($total) ?></p>
-                            </div>
-                        </div>
-                        <form class="row g-3 align-items-end" method="GET">
-                            <div class="col-12 col-lg-4">
-                                <label class="form-label text-muted small text-uppercase">Пошук</label>
-                                <input type="text" name="q" class="form-control form-control-lg"
-                                       placeholder="Введіть назву або артикул"
-                                       value="<?= htmlspecialchars($filters['q'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
-                            </div>
-                            <div class="col-12 col-lg-4">
-                                <label class="form-label text-muted small text-uppercase">Категорія</label>
-                                <select name="category_id" class="form-select form-select-lg">
-                                    <option value="">Усі категорії</option>
+                <p class="text-uppercase text-muted small mb-1">Каталог</p>
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <div>
+                        <h1 class="h3 fw-bold mb-1">Каталог автозапчастин</h1>
+                        <p class="text-muted small mb-0">
+                            Знайдіть потрібну деталь за назвою, категорією, брендом або ціною.
+                        </p>
+                    </div>
+
+                    <div class="text-end">
+                        <p class="small text-muted mb-1">
+                            Показано:
+                            <span class="fw-semibold"><?= count($items) ?></span>
+                            із <?= $total ?>
+                        </p>
+
+                        <?php if (!empty($chips)): ?>
+                            <div class="d-flex flex-wrap gap-1 justify-content-end">
+                                <?php foreach ($chips as $key => $label): ?>
                                     <?php
-                                    $renderOptions = function (array $nodes, string $prefix = '') use (&$renderOptions, $filters): void {
-                                        foreach ($nodes as $category) {
-                                            $selected = ((int) ($filters['category_id'] ?? 0) === (int) $category['id']) ? 'selected' : '';
-                                            echo '<option value="' . (int) $category['id'] . "\" {$selected}>{$prefix}" . htmlspecialchars($category['name'], ENT_QUOTES, 'UTF-8') . '</option>';
-                                            if (!empty($category['children'])) {
-                                                $renderOptions($category['children'], $prefix . '↳ ');
-                                            }
-                                        }
-                                    };
-                                    $renderOptions($categories);
+                                    $params = $baseParams;
+                                    unset($params[$key], $params['page']);
+                                    $qs = $buildQuery($params);
+                                    $href = $qs ? '/catalog?' . $qs : '/catalog';
                                     ?>
-                                </select>
+                                    <a href="<?= $href ?>"
+                                       class="badge rounded-pill text-bg-light border text-decoration-none">
+                                        <?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?>
+                                        <span class="ms-1">&times;</span>
+                                    </a>
+                                <?php endforeach; ?>
+                                <a href="/catalog"
+                                   class="badge rounded-pill text-bg-light border text-decoration-none">
+                                    Очистити все
+                                </a>
                             </div>
-                            <div class="col-12 col-lg-3">
-                                <label class="form-label text-muted small text-uppercase">Бренд</label>
-                                <select name="brand_id" class="form-select form-select-lg">
-                                    <option value="">Усі бренди</option>
-                                    <?php foreach ($brands as $brand): ?>
-                                        <option value="<?= (int) $brand['id'] ?>" <?= ((int) ($filters['brand_id'] ?? 0) === (int) $brand['id']) ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($brand['name'], ENT_QUOTES, 'UTF-8') ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Фільтри -->
+            <div class="col-12 col-md-4 col-lg-3">
+                <div class="card border-0 shadow-sm rounded-4 mb-3">
+                    <div class="card-body">
+                        <h2 class="h6 fw-semibold mb-3">Фільтри по товарах</h2>
+
+                        <form method="get" action="/catalog" class="vstack gap-3">
+                            <div>
+                                <label class="form-label small text-muted">Назва або артикул</label>
+                                <input type="text"
+                                       name="q"
+                                       class="form-control"
+                                       value="<?= htmlspecialchars($currentQuery, ENT_QUOTES, 'UTF-8') ?>"
+                                       placeholder="Наприклад, передні гальмівні колодки">
+                            </div>
+
+                            <div>
+                                <label class="form-label small text-muted">Категорія</label>
+                                <select name="category_id" class="form-select form-select-sm">
+                                    <option value="">Усі категорії</option>
+                                    <?php foreach ($categories as $category): ?>
+                                        <?php
+                                        $catId   = (string)($category['id'] ?? '');
+                                        $catName = htmlspecialchars($category['name'] ?? 'Категорія', ENT_QUOTES, 'UTF-8');
+                                        ?>
+                                        <option value="<?= $catId ?>" <?= $catId === $currentCategory ? 'selected' : '' ?>>
+                                            <?= $catName ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
-                            <div class="col-12 col-lg-1 d-grid">
-                                <button class="btn btn-dark btn-lg" type="submit">
-                                    <i class="bi bi-search me-1"></i>
-                                    Знайти
-                                </button>
+
+                            <div>
+                                <label class="form-label small text-muted">Бренд запчастини</label>
+                                <select name="brand_id" class="form-select form-select-sm">
+                                    <option value="">Усі бренди</option>
+                                    <?php foreach ($brands as $brand): ?>
+                                        <?php
+                                        $bid   = (string)($brand['id'] ?? '');
+                                        $bname = htmlspecialchars($brand['name'] ?? 'Бренд', ENT_QUOTES, 'UTF-8');
+                                        ?>
+                                        <option value="<?= $bid ?>" <?= $bid === $currentBrand ? 'selected' : '' ?>>
+                                            <?= $bname ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
                             </div>
+
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <label class="form-label small text-muted">Ціна від, ₴</label>
+                                    <input type="number"
+                                           name="price_min"
+                                           value="<?= htmlspecialchars($currentMinPrice, ENT_QUOTES, 'UTF-8') ?>"
+                                           class="form-control form-control-sm"
+                                           min="0" step="1">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small text-muted">Ціна до, ₴</label>
+                                    <input type="number"
+                                           name="price_max"
+                                           value="<?= htmlspecialchars($currentMaxPrice, ENT_QUOTES, 'UTF-8') ?>"
+                                           class="form-control form-control-sm"
+                                           min="0" step="1">
+                                </div>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       value="1"
+                                       id="in_stock"
+                                       name="in_stock"
+                                    <?= $currentInStock === '1' ? 'checked' : '' ?>>
+                                <label class="form-check-label small" for="in_stock">
+                                    Показувати тільки в наявності
+                                </label>
+                            </div>
+
+                            <button type="submit" class="btn btn-dark w-100 rounded-pill">
+                                Застосувати
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-body">
+                        <h3 class="h6 fw-semibold mb-3">Сортування</h3>
+                        <form method="get" class="d-flex flex-column gap-2">
+                            <?php foreach ($baseParams as $key => $val): ?>
+                                <?php if ($key === 'sort') continue; ?>
+                                <input type="hidden"
+                                       name="<?= htmlspecialchars($key, ENT_QUOTES, 'UTF-8') ?>"
+                                       value="<?= htmlspecialchars((string)$val, ENT_QUOTES, 'UTF-8') ?>">
+                            <?php endforeach; ?>
+
+                            <select name="sort"
+                                    class="form-select form-select-sm"
+                                    onchange="this.form.submit()">
+                                <?php foreach ($sortLabels as $key => $label): ?>
+                                    <option value="<?= htmlspecialchars($key, ENT_QUOTES, 'UTF-8') ?>"
+                                        <?= $sortKey === $key ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
                         </form>
                     </div>
                 </div>
             </div>
 
-            <div class="col-12">
-                <?php if ($items): ?>
+            <!-- Список товарів -->
+            <div class="col-12 col-md-8 col-lg-9">
+                <?php if (!empty($items)): ?>
                     <div class="row g-3 g-lg-4">
                         <?php foreach ($items as $product): ?>
-                            <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
-                                <div class="card border-0 shadow h-100">
-                                    <div class="ratio ratio-4x3 bg-light rounded-top">
-                                        <div class="d-flex flex-column justify-content-between p-3">
-                                            <span class="badge bg-dark-subtle text-dark-emphasis align-self-start">
-                                                <?= htmlspecialchars($product['category_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>
-                                            </span>
-                                            <span class="text-muted small text-end">
-                                                SKU: <?= htmlspecialchars($product['sku'], ENT_QUOTES, 'UTF-8') ?>
+                            <?php
+                            $name       = htmlspecialchars($product['name'] ?? 'Товар', ENT_QUOTES, 'UTF-8');
+                            $slug       = htmlspecialchars($product['slug'] ?? '', ENT_QUOTES, 'UTF-8');
+                            $category   = htmlspecialchars($product['category_name'] ?? 'Категорія', ENT_QUOTES, 'UTF-8');
+                            $brandName  = htmlspecialchars($product['brand_name'] ?? '', ENT_QUOTES, 'UTF-8');
+                            $price      = isset($product['price']) ? (float)$product['price'] : null;
+                            $stock      = (int)($product['stock'] ?? 0);
+                            ?>
+                            <div class="col-6 col-lg-4 col-xl-3">
+                                <div class="card border-0 shadow-sm rounded-4 h-100">
+                                    <a href="/product/<?= $slug ?>" class="ratio ratio-4x3 bg-light d-flex align-items-center justify-content-center text-muted text-decoration-none rounded-top">
+                                        <i class="bi bi-image fs-3" aria-hidden="true"></i>
+                                    </a>
+                                    <div class="card-body d-flex flex-column p-3">
+                                        <p class="small text-muted mb-1"><?= $category ?></p>
+                                        <h3 class="h6 fw-semibold mb-1 text-truncate" title="<?= $name ?>"><?= $name ?></h3>
+                                        <?php if ($brandName !== ''): ?>
+                                            <p class="small text-muted mb-2"><?= $brandName ?></p>
+                                        <?php endif; ?>
+
+                                        <?php if ($price !== null): ?>
+                                            <p class="fw-bold fs-5 mb-2">
+                                                <?= number_format($price, 2, '.', ' ') ?> ₴
+                                            </p>
+                                        <?php else: ?>
+                                            <p class="text-muted small mb-2">Ціну уточнюйте</p>
+                                        <?php endif; ?>
+
+                                        <div class="d-flex align-items-center justify-content-between mb-3">
+                                            <span class="badge <?= $stock > 0 ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary' ?>">
+                                                <?= $stock > 0 ? 'В наявності' : 'Під замовлення' ?>
                                             </span>
                                         </div>
-                                    </div>
-                                    <div class="card-body d-flex flex-column p-4">
-                                        <h3 class="h5 fw-semibold mb-2"><?= htmlspecialchars($product['name'], ENT_QUOTES, 'UTF-8') ?></h3>
-                                        <p class="text-muted small flex-grow-1 mb-3">
-                                            <?= htmlspecialchars(mb_strimwidth($product['description'] ?? '', 0, 110, '...'), ENT_QUOTES, 'UTF-8') ?>
-                                        </p>
-                                        <div class="d-flex justify-content-between align-items-center mb-3">
-                                            <div>
-                                                <p class="text-muted small mb-1">Ціна</p>
-                                                <p class="h4 fw-bold mb-0"><?= number_format($product['price'], 2, '.', ' ') ?> ₴</p>
-                                            </div>
-                                            <span class="badge bg-success-subtle text-success-emphasis">
-                                                <?= (int) $product['stock'] > 0 ? 'В наявності' : 'Очікується' ?>
-                                            </span>
-                                        </div>
-                                        <div class="d-flex gap-2">
-                                            <a href="/product/<?= htmlspecialchars($product['slug'], ENT_QUOTES, 'UTF-8') ?>" class="btn btn-outline-dark flex-grow-1">
+
+                                        <div class="mt-auto d-grid">
+                                            <a href="/product/<?= $slug ?>" class="btn btn-outline-dark btn-sm rounded-pill">
                                                 Деталі
                                             </a>
-                                            <form action="/cart/add" method="POST" class="d-grid flex-grow-1">
-                                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
-                                                <input type="hidden" name="product_id" value="<?= (int) $product['id'] ?>">
-                                                <input type="hidden" name="quantity" value="1">
-                                                <button type="submit" class="btn btn-dark">
-                                                    <i class="bi bi-bag-plus me-1"></i>
-                                                    У кошик
-                                                </button>
-                                            </form>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         <?php endforeach; ?>
                     </div>
+
+                    <?php if ($pages > 1): ?>
+                        <nav class="mt-4" aria-label="Пагінація каталогу">
+                            <div class="d-flex justify-content-center">
+                                <ul class="pagination pagination-sm mb-0">
+                                    <?php
+                                    $prevPage = max(1, $page - 1);
+                                    $nextPage = min($pages, $page + 1);
+                                    ?>
+                                    <li class="page-item mx-1 <?= $page <= 1 ? 'disabled' : '' ?>">
+                                        <a class="page-link border-0 rounded-pill px-3 py-2 <?= $page <= 1 ? 'bg-body-secondary text-muted' : 'bg-white text-dark' ?>"
+                                           href="<?= $buildPageUrl($prevPage, $baseParams, $buildQuery) ?>">
+                                            <i class="bi bi-chevron-left"></i>
+                                        </a>
+                                    </li>
+
+                                    <?php for ($i = 1; $i <= $pages; $i++): ?>
+                                        <li class="page-item mx-1 <?= $i === $page ? 'active' : '' ?>">
+                                            <a class="page-link border-0 rounded-pill px-3 py-2 <?= $i === $page ? 'bg-dark text-white' : 'bg-white text-dark' ?>"
+                                               href="<?= $buildPageUrl($i, $baseParams, $buildQuery) ?>">
+                                                <?= $i ?>
+                                            </a>
+                                        </li>
+                                    <?php endfor; ?>
+
+                                    <li class="page-item mx-1 <?= $page >= $pages ? 'disabled' : '' ?>">
+                                        <a class="page-link border-0 rounded-pill px-3 py-2 <?= $page >= $pages ? 'bg-body-secondary text-muted' : 'bg-white text-dark' ?>"
+                                           href="<?= $buildPageUrl($nextPage, $baseParams, $buildQuery) ?>">
+                                            <i class="bi bi-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </nav>
+                    <?php endif; ?>
                 <?php else: ?>
-                    <div class="alert alert-secondary border-0 shadow-sm p-4 text-center">
-                        Ми не знайшли товарів за заданими фільтрами. Спробуйте змінити параметри пошуку.
+                    <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="bi bi-info-circle fs-3 text-warning"></i>
+                            </div>
+                            <div>
+                                <h3 class="h6 fw-semibold mb-1">За вибраними критеріями товари не знайдені</h3>
+                                <p class="text-muted small mb-0">
+                                    Спробуйте змінити параметри пошуку або очистити фільтри.
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 <?php endif; ?>
             </div>
-
-            <?php if ($totalPages > 1): ?>
-                <div class="col-12">
-                    <nav>
-                        <ul class="pagination pagination-lg justify-content-center">
-                            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                                <li class="page-item <?= $i === $page ? 'active' : '' ?>">
-                                    <a class="page-link" href="?<?= http_build_query(array_merge($filters, ['page' => $i])) ?>">
-                                        <?= $i ?>
-                                    </a>
-                                </li>
-                            <?php endfor; ?>
-                        </ul>
-                    </nav>
-                </div>
-            <?php endif; ?>
         </div>
     </div>
 </section>

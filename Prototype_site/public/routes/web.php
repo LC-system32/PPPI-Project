@@ -48,7 +48,13 @@ Router::post('/cart/update', [CartController::class, 'update']);
 Router::post('/cart/remove', [CartController::class, 'remove']);
 
 // Оформлення замовлення
-Router::get('/checkout', [OrderController::class, 'checkout']);
+Router::get('/checkout', [OrderController::class, 'delivery']);
+Router::get('/checkout/delivery', [OrderController::class, 'delivery']);
+Router::post('/checkout/delivery', [OrderController::class, 'storeDelivery']);
+Router::get('/checkout/payment', [OrderController::class, 'payment']);
+Router::post('/checkout/payment', [OrderController::class, 'storePayment']);
+Router::get('/checkout/confirm', [OrderController::class, 'confirm']);
+Router::post('/checkout/confirm', [OrderController::class, 'place']);
 Router::post('/checkout', [OrderController::class, 'place']);
 Router::get('/orders', [OrderController::class, 'userOrders']);
 

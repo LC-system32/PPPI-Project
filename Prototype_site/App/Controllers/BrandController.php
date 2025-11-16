@@ -18,7 +18,9 @@ class BrandController extends Controller
         $currentType   = (string) ($filters['type'] ?? '');
         $currentSort   = (string) ($filters['sort'] ?? '');
 
-        $brands = Brand::all();
+        // Для списку брендів показуємо лише бренди виробників запчастин,
+        // які реально присутні у товарах.
+        $brands = Brand::allForProducts();
 
         if ($currentQuery !== '') {
             $q = mb_strtolower($currentQuery);
@@ -85,19 +87,29 @@ class BrandController extends Controller
 
         $page = max((int) ($filters['page'] ?? 1), 1);
 
+        // Моделі авто цього бренду (якщо є) – означає, що це "марка авто"
+        $carModels = CarModel::forBrand($brand['name']);
+        $hasCarModels = !empty($carModels);
+
         $query = [
-            'brand_id' => $brand['id'],
-            'keyword' => $filters['q'] ?? null,
+            'keyword'       => $filters['q'] ?? null,
             'category_name' => $filters['category'] ?? null,
-            'in_stock' => !empty($filters['in_stock']) ? 1 : null,
-            'price_min' => $filters['price_min'] ?? null,
-            'price_max' => $filters['price_max'] ?? null,
-            'sort' => $filters['sort'] ?? null,
+            'in_stock'      => !empty($filters['in_stock']) ? 1 : null,
+            'price_min'     => $filters['price_min'] ?? null,
+            'price_max'     => $filters['price_max'] ?? null,
+            'sort'          => $filters['sort'] ?? null,
         ];
 
-        $products = Product::paginate($page, 12, $query);
+        // Якщо бренд є саме маркою авто (є car_models.brand = brand.name),
+        // показуємо всі запчастини, сумісні з цими авто, незалежно від бренду запчастини.
+        // Якщо ні – працюємо як раніше, це бренд виробника запчастин.
+        if ($hasCarModels) {
+            $query['car_brand'] = $brand['name'];
+        } else {
+            $query['brand_id'] = $brand['id'];
+        }
 
-        $carModels = CarModel::forBrand($brand['name']);
+        $products = Product::paginate($page, 12, $query);
 
         $this->view('brand/show', [
             'brand'     => $brand,

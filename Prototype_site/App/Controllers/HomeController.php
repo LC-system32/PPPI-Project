@@ -3,9 +3,9 @@
 namespace App\Controllers;
 
 use App\Core\Controller;
+use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
-use App\Models\Brand;
 
 class HomeController extends Controller
 {
@@ -16,17 +16,17 @@ class HomeController extends Controller
 
     public function index(): void
     {
-        // ⭐ Додаємо бренди — наприклад, максимум 6
-        $brands = Brand::all();              // беремо всі
-        $brands = array_slice($brands, 0, 24); // обрізаємо до 6
-        
-        // Категорії
-        $categories = Category::topLevel(22);
-        
+        // Марки авто для головної (тільки бренди, що мають моделі в car_models)
+        $brands = Brand::allCarMakers();
+        $brands = array_slice($brands, 0, 18);
+
+        // Популярні верхньорівневі категорії
+        $categories = Category::topLevel(16);
+
         // Рекомендовані товари
         $featured = Product::paginate(1, 24)['items'] ?? [];
 
-        // Передаємо у view
         $this->view('home', compact('categories', 'featured', 'brands'));
     }
 }
+

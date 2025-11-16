@@ -463,8 +463,6 @@
             <div class="d-flex justify-content-center gap-2 flex-wrap">
                 <a href="#"
                     class="btn btn-dark btn-lg px-4 fw-semibold shadow-sm">Підібрати по VIN</a>
-                <a href="/contacts"
-                    class="btn btn-outline-dark btn-lg px-4 fw-semibold shadow-sm">Зв’язатися з нами</a>
             </div>
         </div>
     </div>

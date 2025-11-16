@@ -14,7 +14,22 @@ class Product extends Model
         $conditions = ['p.is_active = true'];
         $params = [];
 
-        if (!empty($filters['category_id'])) {
+        // Фільтр по одній категорії або набору категорій (з нащадками)
+        if (!empty($filters['category_ids']) && is_array($filters['category_ids'])) {
+            $ids = array_values(array_filter(array_map('intval', $filters['category_ids']), static function ($id) {
+                return $id > 0;
+            }));
+
+            if ($ids) {
+                $placeholders = [];
+                foreach ($ids as $idx => $id) {
+                    $key = 'category_id_' . $idx;
+                    $placeholders[] = ':' . $key;
+                    $params[$key] = $id;
+                }
+                $conditions[] = 'p.category_id IN (' . implode(',', $placeholders) . ')';
+            }
+        } elseif (!empty($filters['category_id'])) {
             $conditions[] = 'p.category_id = :category_id';
             $params['category_id'] = (int) $filters['category_id'];
         }
@@ -25,8 +40,25 @@ class Product extends Model
         }
 
         if (!empty($filters['keyword'])) {
-            $conditions[] = '(p.name ILIKE :keyword OR p.description ILIKE :keyword)';
-            $params['keyword'] = '%' . $filters['keyword'] . '%';
+            $keyword = (string) $filters['keyword'];
+
+            // Базовий пошук по назві, опису, SKU та slug (частковий збіг)
+            $searchClauses = [
+                'p.name ILIKE :keyword_like',
+                'p.description ILIKE :keyword_like',
+                'p.sku ILIKE :keyword_like',
+                'p.slug ILIKE :keyword_like',
+            ];
+
+            // Якщо рядок без пробілів (схожий на артикул) — додаємо точний збіг по SKU/slug
+            if (strpos($keyword, ' ') === false) {
+                $searchClauses[] = 'UPPER(p.sku) = UPPER(:keyword_exact)';
+                $searchClauses[] = 'UPPER(p.slug) = UPPER(:keyword_exact)';
+                $params['keyword_exact'] = $keyword;
+            }
+
+            $conditions[] = '(' . implode(' OR ', $searchClauses) . ')';
+            $params['keyword_like'] = '%' . $keyword . '%';
         }
 
         if (!empty($filters['category_name'])) {
@@ -38,14 +70,27 @@ class Product extends Model
             $conditions[] = 'p.stock > 0';
         }
 
-        if ($filters['price_min'] !== null && $filters['price_min'] !== '') {
+        $priceMin = $filters['price_min'] ?? null;
+        if ($priceMin !== null && $priceMin !== '') {
             $conditions[] = 'p.price >= :price_min';
-            $params['price_min'] = (float) $filters['price_min'];
+            $params['price_min'] = (float) $priceMin;
         }
 
-        if ($filters['price_max'] !== null && $filters['price_max'] !== '') {
+        $priceMax = $filters['price_max'] ?? null;
+        if ($priceMax !== null && $priceMax !== '') {
             $conditions[] = 'p.price <= :price_max';
-            $params['price_max'] = (float) $filters['price_max'];
+            $params['price_max'] = (float) $priceMax;
+        }
+
+        if (!empty($filters['car_brand'])) {
+            $conditions[] = 'EXISTS (
+                SELECT 1
+                FROM product_car_model pcm
+                JOIN car_models cm ON cm.id = pcm.car_model_id
+                WHERE pcm.product_id = p.id
+                  AND cm.brand = :car_brand
+            )';
+            $params['car_brand'] = $filters['car_brand'];
         }
 
         $where = implode(' AND ', $conditions);
