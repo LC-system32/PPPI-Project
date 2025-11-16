@@ -29,13 +29,13 @@ $modelSlug = $modelSlug ?? null;
 ?>
 
 <section class="position-relative text-white overflow-hidden">
-    <div class="ratio" style="--bs-aspect-ratio: 28%;">
+    <div class="ratio" style="--bs-aspect-ratio: 25%;">
         <img src="https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=1600&q=80"
              class="w-100 h-100 object-fit-cover"
              alt="<?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?>">
     </div>
     <div class="position-absolute top-0 start-0 w-100 h-100"
-         style="background: linear-gradient(120deg, rgba(8,8,10,.9), rgba(30,30,30,.6));"></div>
+         style="background: linear-gradient(120deg, rgba(8,8,10,.9), rgba(30,30,30,.4));"></div>
     <div class="container position-absolute top-50 start-50 translate-middle text-center text-lg-start">
         <nav aria-label="breadcrumb" class="mb-3">
             <ol class="breadcrumb mb-0">

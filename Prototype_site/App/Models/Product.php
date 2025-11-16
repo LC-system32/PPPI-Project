@@ -29,14 +29,57 @@ class Product extends Model
             $params['keyword'] = '%' . $filters['keyword'] . '%';
         }
 
+        if (!empty($filters['category_name'])) {
+            $conditions[] = 'c.name = :category_name';
+            $params['category_name'] = $filters['category_name'];
+        }
+
+        if (!empty($filters['in_stock'])) {
+            $conditions[] = 'p.stock > 0';
+        }
+
+        if ($filters['price_min'] !== null && $filters['price_min'] !== '') {
+            $conditions[] = 'p.price >= :price_min';
+            $params['price_min'] = (float) $filters['price_min'];
+        }
+
+        if ($filters['price_max'] !== null && $filters['price_max'] !== '') {
+            $conditions[] = 'p.price <= :price_max';
+            $params['price_max'] = (float) $filters['price_max'];
+        }
+
         $where = implode(' AND ', $conditions);
 
-        $sql = "SELECT p.*, c.name AS category_name, b.name AS brand_name
-                FROM products p
+        $sort = $filters['sort'] ?? '';
+        switch ($sort) {
+            case 'price_asc':
+                $orderBy = 'p.price ASC';
+                break;
+            case 'price_desc':
+                $orderBy = 'p.price DESC';
+                break;
+            case 'name_asc':
+                $orderBy = 'p.name ASC';
+                break;
+            case 'name_desc':
+                $orderBy = 'p.name DESC';
+                break;
+            case 'newest':
+                $orderBy = 'p.created_at DESC';
+                break;
+            default:
+                $orderBy = 'p.created_at DESC';
+                break;
+        }
+
+        $fromClause = "FROM products p
                 LEFT JOIN categories c ON c.id = p.category_id
-                LEFT JOIN brands b ON b.id = p.brand_id
+                LEFT JOIN brands b ON b.id = p.brand_id";
+
+        $sql = "SELECT p.*, c.name AS category_name, b.name AS brand_name
+                {$fromClause}
                 WHERE {$where}
-                ORDER BY p.created_at DESC
+                ORDER BY {$orderBy}
                 LIMIT :limit OFFSET :offset";
 
         $stmt = self::db()->prepare($sql);
@@ -51,7 +94,8 @@ class Product extends Model
 
         $items = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
-        $countStmt = self::db()->prepare("SELECT COUNT(*) FROM products p WHERE {$where}");
+        $countSql = "SELECT COUNT(*) {$fromClause} WHERE {$where}";
+        $countStmt = self::db()->prepare($countSql);
         foreach ($params as $key => $value) {
             $countStmt->bindValue(':' . $key, $value);
         }

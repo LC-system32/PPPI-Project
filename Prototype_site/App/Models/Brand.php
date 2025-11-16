@@ -8,7 +8,13 @@ class Brand extends Model
 {
     public static function all(): array
     {
-        return self::query('SELECT * FROM brands ORDER BY name')->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        $sql = 'SELECT b.*, COUNT(p.id) AS products_count
+                FROM brands b
+                LEFT JOIN products p ON p.brand_id = b.id
+                GROUP BY b.id
+                ORDER BY b.name';
+
+        return self::query($sql)->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 
     public static function find(int $id): ?array

@@ -34,7 +34,7 @@
             </div>
         </div>
 
-        <a href="/about" class="btn btn-outline-light btn-lg fw-semibold px-4">Дізнатись більше</a>
+        <a href="/about" class="btn btn-outline-light btn-lg fw-semibold px-4 shadow-sm">Дізнатись більше</a>
     </div>
 
     <img src="https://t4.ftcdn.net/jpg/03/80/98/93/240_F_380989347_IKOXAkY4e3pYmCyIrKSngo48EZhLFYDO.jpg" alt="Hero background"
@@ -55,7 +55,7 @@
             aria-label="Пошуковий запит">
 
         <button type="submit"
-            class="btn btn-dark fw-semibold px-4">
+            class="btn btn-dark fw-semibold px-4 shadow-sm">
             Пошук
         </button>
     </form>
@@ -66,7 +66,7 @@
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="fw-bold mb-0 h3">Популярні марки авто</h2>
-            <a href="/brands" class="btn btn-outline-dark btn-sm">Всі марки</a>
+            <a href="/brands" class="btn btn-outline-dark btn-sm fw-semibold shadow-sm">Всі марки</a>
         </div>
 
         <?php if (!empty($brands) && is_array($brands)): ?>
@@ -74,7 +74,7 @@
 
             <div class="d-flex align-items-center">
                 <!-- Ліва кнопка -->
-                <button class="btn btn-outline-secondary me-2"
+                <button class="btn btn-outline-secondary me-2 shadow-sm"
                         type="button"
                         data-bs-target="#brandsCarousel"
                         data-bs-slide="prev"
@@ -101,11 +101,11 @@
 
                                         <div class="col-6 col-md-4 col-lg-2">
                                             <a href="/brand/<?= $brandSlug ?>" class="text-decoration-none">
-                                                <div class="card text-center border-0 shadow-sm py-3 h-100">
+                                                <div class="card text-center border-0 shadow-sm py-3 h-100 rounded-4 bg-white">
                                                     <?php if ($brandLogo): ?>
                                                         <img src="<?= htmlspecialchars($brandLogo, ENT_QUOTES, 'UTF-8') ?>"
                                                              alt="<?= $brandName ?> логотип"
-                                                             class="mx-auto mb-2"
+                                                             class="img-fluid img-thumbnail rounded bg-white p-1 mx-auto mb-2"
                                                              loading="lazy"
                                                              style="max-height:42px; width:auto;">
                                                     <?php else: ?>
@@ -131,7 +131,7 @@
                 </div>
 
                 <!-- Права кнопка -->
-                <button class="btn btn-outline-secondary ms-2"
+                <button class="btn btn-outline-secondary ms-2 shadow-sm"
                         type="button"
                         data-bs-target="#brandsCarousel"
                         data-bs-slide="next"
@@ -150,7 +150,7 @@
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="fw-bold mb-0 h3">Популярні категорії запчастин</h2>
-            <a href="/categories" class="btn btn-outline-dark btn-sm">Дивитися всі</a>
+            <a href="/categories" class="btn btn-outline-dark btn-sm fw-semibold shadow-sm">Дивитися всі</a>
         </div>
 
         <?php if (!empty($categories) && is_array($categories)): ?>
@@ -158,7 +158,7 @@
 
             <div class="d-flex align-items-center">
                 <!-- Ліва кнопка -->
-                <button class="btn btn-outline-secondary me-2"
+                <button class="btn btn-outline-secondary me-2 shadow-sm"
                         type="button"
                         data-bs-target="#categoriesCarousel"
                         data-bs-slide="prev"
@@ -187,19 +187,21 @@
 
                                         <div class="col-6 col-md-3">
                                             <a href="/category/<?= $catSlug ?>" class="text-decoration-none text-dark" aria-label="Категорія: <?= $catName ?>">
-                                                <div class="card border-0 shadow-sm h-100">
+                                                <div class="card border-0 shadow-sm h-100 rounded-4 bg-white">
                                                     <div class="card-body d-flex flex-column">
                                                         <div class="mb-2">
                                                             <?php if ($catIcon): ?>
                                                                 <img src="<?= htmlspecialchars($catIcon, ENT_QUOTES, 'UTF-8') ?>"
-                                                                     alt="Іконка <?= $catName ?>" loading="lazy" style="height:28px;width:auto;">
+                                                                     alt="Іконка <?= $catName ?>" loading="lazy"
+                                                                     class="img-fluid"
+                                                                     style="height:28px;width:auto;">
                                                             <?php else: ?>
                                                                 <i class="bi bi-grid fs-4" aria-hidden="true"></i>
                                                             <?php endif; ?>
                                                         </div>
                                                         <h5 class="card-title fw-semibold mb-2"><?= $catName ?></h5>
                                                         <p class="text-muted small mb-3"><?= $catDesc ?></p>
-                                                        <span class="btn btn-outline-dark w-100 mt-auto">Переглянути</span>
+                                                        <span class="btn btn-dark btn-sm px-3 py-2 fw-semibold shadow-sm w-100 mt-auto">Переглянути</span>
                                                     </div>
                                                 </div>
                                             </a>
@@ -217,7 +219,7 @@
                 </div>
 
                 <!-- Права кнопка -->
-                <button class="btn btn-outline-secondary ms-2"
+                <button class="btn btn-outline-secondary ms-2 shadow-sm"
                         type="button"
                         data-bs-target="#categoriesCarousel"
                         data-bs-slide="next"
@@ -236,7 +238,7 @@
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="fw-bold mb-0 h3">Рекомендовані товари</h2>
-            <a href="/catalog" class="btn btn-outline-dark btn-sm">Дивитися все</a>
+            <a href="/catalog" class="btn btn-outline-dark btn-sm fw-semibold shadow-sm">Дивитися все</a>
         </div>
 
         <?php if (!empty($featured) && is_array($featured)): ?>
@@ -244,7 +246,7 @@
 
             <div class="d-flex align-items-center">
                 <!-- Ліва кнопка -->
-                <button class="btn btn-outline-secondary me-2"
+                <button class="btn btn-outline-secondary me-2 shadow-sm"
                         type="button"
                         data-bs-target="#featuredCarousel"
                         data-bs-slide="prev"
@@ -275,7 +277,7 @@
                             <?php endif; ?>
 
                                         <div class="col-6 col-md-3" itemprop="itemListElement" itemscope itemtype="https://schema.org/Product">
-                                            <div class="card border-0 shadow-sm h-100">
+                                            <div class="card border-0 shadow-sm h-100 rounded-4 bg-white">
 
                                                 <?php if ($pImg): ?>
                                                     <a href="/product/<?= $pSlug ?>" class="ratio ratio-4x3">
@@ -303,14 +305,14 @@
                                                             <?php if ($pReviews !== null): ?>
                                                                 <meta itemprop="reviewCount" content="<?= $pReviews ?>">
                                                             <?php endif; ?>
-                                                            <div class="me-2" aria-label="Рейтинг <?= number_format($pRating, 1) ?> з 5">
+                                                            <div class="me-2 text-warning" aria-label="Рейтинг <?= number_format($pRating, 1) ?> з 5">
                                                                 <?php
                                                                 $full  = (int)floor($pRating);
                                                                 $half  = ($pRating - $full) >= 0.5 ? 1 : 0;
                                                                 $empty = 5 - $full - $half;
-                                                                echo str_repeat('<i class="bi bi-star-fill"></i>', $full);
-                                                                echo str_repeat('<i class="bi bi-star-half"></i>', $half);
-                                                                echo str_repeat('<i class="bi bi-star"></i>', $empty);
+                                                                echo str_repeat('<i class="bi bi-star-fill me-1"></i>', $full);
+                                                                echo str_repeat('<i class="bi bi-star-half me-1"></i>', $half);
+                                                                echo str_repeat('<i class="bi bi-star me-1"></i>', $empty);
                                                                 ?>
                                                             </div>
                                                             <small class="text-muted">
@@ -330,12 +332,12 @@
                                                     </p>
 
                                                     <div class="d-flex align-items-center justify-content-between mb-3">
-                                                        <span class="badge <?= $pInStock ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary' ?>">
+                                                        <span class="badge <?= $pInStock ? 'text-bg-success' : 'text-bg-secondary' ?> rounded-pill small">
                                                             <?= $pInStock ? 'В наявності' : 'Під замовлення' ?>
                                                         </span>
                                                     </div>
                                                     <div class="d-grid mt-auto">
-                                                        <a href="/product/<?= $pSlug ?>" class="btn btn-dark w-100">До товару</a>
+                                                        <a href="/product/<?= $pSlug ?>" class="btn btn-dark btn-sm px-3 py-2 fw-semibold shadow-sm w-100">До товару</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -353,7 +355,7 @@
                 </div>
 
                 <!-- Права кнопка -->
-                <button class="btn btn-outline-secondary ms-2"
+                <button class="btn btn-outline-secondary ms-2 shadow-sm"
                         type="button"
                         data-bs-target="#featuredCarousel"
                         data-bs-slide="next"
@@ -367,45 +369,6 @@
     </div>
 </section>
 
-<!-- === НАШІ ПЕРЕВАГИ === -->
-<section class="py-5">
-    <div class="container">
-        <div class="text-center mb-4">
-            <h2 class="fw-bold h3">Чому обирають AutoParts</h2>
-            <p class="text-muted">Поєднуємо правильний підбір, ціну та сервіс.</p>
-        </div>
-        <div class="row g-4">
-            <div class="col-12 col-md-4">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="mb-2"><i class="bi bi-shield-check fs-3" aria-hidden="true"></i></div>
-                        <h5 class="fw-semibold mb-2">Перевірені постачальники</h5>
-                        <p class="text-muted mb-0">Оригінал і сертифіковані аналоги, гарантія та повернення згідно закону.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-md-4">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="mb-2"><i class="bi bi-lightning-charge fs-3" aria-hidden="true"></i></div>
-                        <h5 class="fw-semibold mb-2">Швидка логістика</h5>
-                        <p class="text-muted mb-0">Відправка день-у-день, доставка по Україні будь-яким перевізником.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-md-4">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="mb-2"><i class="bi bi-chat-dots fs-3" aria-hidden="true"></i></div>
-                        <h5 class="fw-semibold mb-2">Підтримка експертів</h5>
-                        <p class="text-muted mb-0">Допоможемо підібрати по VIN, уникнути несумісності та зайвих витрат.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
 <!-- === ЯК ЦЕ ПРАЦЮЄ === -->
 <section class="py-5 bg-light">
     <div class="container">
@@ -415,7 +378,7 @@
         </div>
         <div class="row g-4">
             <div class="col-12 col-md-4">
-                <div class="card border-0 shadow-sm h-100">
+                <div class="card border-0 shadow-sm h-100 rounded-4 bg-white">
                     <div class="card-body">
                         <span class="badge bg-dark rounded-pill mb-2">1</span>
                         <h5 class="fw-semibold mb-2">Знаходите деталь</h5>
@@ -424,7 +387,7 @@
                 </div>
             </div>
             <div class="col-12 col-md-4">
-                <div class="card border-0 shadow-sm h-100">
+                <div class="card border-0 shadow-sm h-100 rounded-4 bg-white">
                     <div class="card-body">
                         <span class="badge bg-dark rounded-pill mb-2">2</span>
                         <h5 class="fw-semibold mb-2">Оформлюєте замовлення</h5>
@@ -433,7 +396,7 @@
                 </div>
             </div>
             <div class="col-12 col-md-4">
-                <div class="card border-0 shadow-sm h-100">
+                <div class="card border-0 shadow-sm h-100 rounded-4 bg-white">
                     <div class="card-body">
                         <span class="badge bg-dark rounded-pill mb-2">3</span>
                         <h5 class="fw-semibold mb-2">Отримуєте швидко</h5>
@@ -450,7 +413,7 @@
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="fw-bold h3 mb-0">Відгуки клієнтів</h2>
-            <a href="/reviews" class="btn btn-outline-dark btn-sm">Усі відгуки</a>
+            <a href="/reviews" class="btn btn-outline-dark btn-sm fw-semibold shadow-sm">Усі відгуки</a>
         </div>
         <div class="row g-4">
             <?php
@@ -462,7 +425,7 @@
             ?>
             <?php foreach ($reviews as $r): ?>
                 <div class="col-12 col-md-4">
-                    <div class="card border-0 shadow-sm h-100">
+                    <div class="card border-0 shadow-sm h-100 rounded-4 bg-body-tertiary">
                         <div class="card-body">
                             <div class="d-flex align-items-center mb-2">
                                 <div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center me-2" style="width:36px;height:36px;">
@@ -477,10 +440,10 @@
                             $half = ($rv - $full) >= 0.5 ? 1 : 0;
                             $empty = 5 - $full - $half;
                             ?>
-                            <div aria-label="Оцінка <?= number_format($rv, 1) ?> з 5">
-                                <?= str_repeat('<i class="bi bi-star-fill"></i>', $full) ?>
-                                <?= str_repeat('<i class="bi bi-star-half"></i>', $half) ?>
-                                <?= str_repeat('<i class="bi bi-star"></i>', $empty) ?>
+                            <div aria-label="Оцінка <?= number_format($rv, 1) ?> з 5" class="text-warning">
+                                <?= str_repeat('<i class="bi bi-star-fill me-1"></i>', $full) ?>
+                                <?= str_repeat('<i class="bi bi-star-half me-1"></i>', $half) ?>
+                                <?= str_repeat('<i class="bi bi-star me-1"></i>', $empty) ?>
                                 <small class="text-muted ms-2"><?= number_format($rv, 1) ?></small>
                             </div>
                         </div>
@@ -494,14 +457,14 @@
 <!-- === ФІНАЛЬНИЙ CTA === -->
 <section class="py-5 text-center bg-light">
     <div class="container">
-        <div class="p-4 p-md-5 rounded-4 border shadow-sm">
+        <div class="p-4 p-md-5 rounded-4 border shadow-sm bg-white">
             <h2 class="fw-bold h3 mb-2">Готові замовити?</h2>
             <p class="text-muted mb-3">Спробуйте пошук за VIN або напишіть нам — допоможемо обрати оптимальний варіант.</p>
             <div class="d-flex justify-content-center gap-2 flex-wrap">
                 <a href="#"
-                    class="btn btn-dark btn-lg px-4">Підібрати по VIN</a>
+                    class="btn btn-dark btn-lg px-4 fw-semibold shadow-sm">Підібрати по VIN</a>
                 <a href="/contacts"
-                    class="btn btn-outline-dark btn-lg px-4">Зв’язатися з нами</a>
+                    class="btn btn-outline-dark btn-lg px-4 fw-semibold shadow-sm">Зв’язатися з нами</a>
             </div>
         </div>
     </div>
