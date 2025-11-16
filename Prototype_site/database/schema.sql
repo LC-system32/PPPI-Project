@@ -21,6 +21,7 @@ CREATE TABLE users (
     phone VARCHAR(30),
     first_name VARCHAR(100),
     last_name VARCHAR(100),
+    address TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -83,6 +84,9 @@ CREATE TABLE product_car_model (
 CREATE TABLE orders (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(id),
+    guest_name VARCHAR(255),
+    guest_email VARCHAR(255),
+    guest_phone VARCHAR(30),
     status VARCHAR(50) NOT NULL DEFAULT 'new',
     total NUMERIC(12,2) NOT NULL,
     payment_method VARCHAR(50),
@@ -100,6 +104,24 @@ CREATE TABLE order_items (
     price NUMERIC(12,2) NOT NULL,
     quantity INT NOT NULL,
     name_snapshot VARCHAR(255)
+);
+
+-- Returns/Exchanges table (14-day return policy as per Ukrainian Consumer Protection Law)
+CREATE TABLE returns (
+    id SERIAL PRIMARY KEY,
+    order_id INT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    user_id INT REFERENCES users(id) ON DELETE SET NULL,
+    reason VARCHAR(100) NOT NULL,
+    description TEXT,
+    items_json JSONB,
+    status VARCHAR(50) NOT NULL DEFAULT 'pending',
+    return_method VARCHAR(50),
+    tracking_number VARCHAR(100),
+    notes TEXT,
+    admin_comment TEXT,
+    deadline_days INT DEFAULT 14,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Optional session-based carts can зберігатися в таблиці, якщо потрібно історію:

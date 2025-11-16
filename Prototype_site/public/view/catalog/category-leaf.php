@@ -2,7 +2,6 @@
 <?php include __DIR__ . '/../../includes/navbar.php'; ?>
 
 <?php
-// Очікується: $category (leaf), $parent, $productsPage, $breadcrumbs, $filters
 $items   = $productsPage['items'] ?? [];
 $page    = (int)($productsPage['page']  ?? 1);
 $pages   = (int)($productsPage['pages'] ?? 1);
@@ -223,7 +222,7 @@ $buildPageUrl = static function (int $page, string $slug, array $baseParams, cal
                                         <li class="page-item mx-1 <?= $i === $page ? 'active' : '' ?>">
                                             <a class="page-link border-0 rounded-pill px-3 py-2 <?= $i === $page ? 'bg-dark text-white' : 'bg-white text-dark' ?>"
                                                href="<?= $buildPageUrl($i, $slug, $baseParams, $buildQuery) ?>">
-                                                <?= $i ?>
+                                            <?= $i ?>
                                             </a>
                                         </li>
                                     <?php endfor; ?>

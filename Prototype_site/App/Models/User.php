@@ -12,6 +12,10 @@ class User extends Model
     public string $email;
     public string $password_hash;
     public ?int $role_id = null;
+    public ?string $first_name = null;
+    public ?string $last_name = null;
+    public ?string $phone = null;
+    public ?string $address = null;
 
     public static function findByEmail(string $email): ?self
     {
@@ -52,17 +56,21 @@ class User extends Model
         return $row ? self::fromRow($row) : null;
     }
 
-    public static function updateProfile(int $id, string $login, string $email): bool
+    public static function updateProfile(int $id, string $login, string $email, ?string $firstName = null, ?string $lastName = null, ?string $phone = null, ?string $address = null): bool
     {
         $stmt = self::db()->prepare(
             'UPDATE users
-             SET login = :login, email = :email, updated_at = NOW()
+             SET login = :login, email = :email, first_name = :first_name, last_name = :last_name, phone = :phone, address = :address, updated_at = NOW()
              WHERE id = :id'
         );
 
         return $stmt->execute([
             'login' => $login,
             'email' => $email,
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'phone' => $phone,
+            'address' => $address,
             'id' => $id,
         ]);
     }

@@ -11,6 +11,7 @@ use App\Controllers\FooterController;
 use App\Controllers\HomeController;
 use App\Controllers\OrderController;
 use App\Controllers\ProfileController;
+use App\Controllers\ReturnController;
 use App\Core\Router;
 
 Router::get('/', [HomeController::class, 'index']);
@@ -54,8 +55,15 @@ Router::get('/checkout/payment', [OrderController::class, 'payment']);
 Router::post('/checkout/payment', [OrderController::class, 'storePayment']);
 Router::get('/checkout/confirm', [OrderController::class, 'confirm']);
 Router::post('/checkout/confirm', [OrderController::class, 'place']);
+Router::get('/checkout/success', [OrderController::class, 'success']);
 Router::post('/checkout', [OrderController::class, 'place']);
 Router::get('/orders', [OrderController::class, 'userOrders']);
+
+// Повернення/обмін товару
+Router::get('/returns', [ReturnController::class, 'index']);
+Router::get('/returns/create', [ReturnController::class, 'create']);
+Router::post('/returns', [ReturnController::class, 'store']);
+Router::get('/returns/{id}', [ReturnController::class, 'show']);
 
 // Інформаційні сторінки футера
 Router::get('/about', [FooterController::class, 'about']);
@@ -88,4 +96,8 @@ Router::group('/admin', function () {
     Router::get('/orders', [AdminOrderController::class, 'index']);
     Router::get('/orders/{id}', [AdminOrderController::class, 'show']);
     Router::post('/orders/{id}/status', [AdminOrderController::class, 'updateStatus']);
+
+    // Повернення товару
+    Router::get('/returns', [ReturnController::class, 'adminIndex']);
+    Router::post('/returns/{id}/status', [ReturnController::class, 'adminUpdateStatus']);
 });

@@ -46,42 +46,8 @@ $baseParams = [
 $baseParams = array_filter($baseParams, fn($v) => $v !== null && $v !== '');
 ?>
 
-<!-- HERO / BANNER -->
-<section class="position-relative text-white overflow-hidden">
-    <div class="ratio" style="--bs-aspect-ratio: 25%;">
-        <img src="https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=1600&q=80"
-             class="w-100 h-100 object-fit-cover" alt="Бренди авто">
-    </div>
-
-    <div class="position-absolute top-0 start-0 w-100 h-100"
-         style="background: linear-gradient(120deg, rgba(8,8,10,.9), rgba(30,30,30,.4));"></div>
-    <div class="container position-absolute top-50 start-50 translate-middle">
-        <div class="row justify-content-between align-items-center g-3">
-            <div class="col-12 col-lg-7">
-                <nav aria-label="breadcrumb" class="mb-3">
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item">
-                            <a class="text-white-50 text-decoration-none" href="/">Головна</a>
-                        </li>
-                        <li class="breadcrumb-item active text-white" aria-current="page">
-                            Бренди
-                        </li>
-                    </ol>
-                </nav>
-
-                <h1 class="display-5 fw-bold mb-3">Виробники запчастин</h1>
-                <p class="lead text-white-50 mb-0" style="max-width: 640px;">
-                    Обирайте запчастини від надійних світових брендів. Оригінали та якісні аналоги з офіційних каналів постачання.
-                </p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- CONTENT -->
 <section class="py-5 bg-body-tertiary">
     <div class="container">
-
         <!-- Заголовок + коротка статистика -->
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
             <div>

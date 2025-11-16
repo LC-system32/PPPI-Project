@@ -89,6 +89,62 @@ class Order extends Model
         }
     }
 
+    public static function createFromCartGuest(array $guest, array $payload, array $cartItems): ?array
+    {
+        if (!$cartItems) {
+            return null;
+        }
+
+        $db = self::db();
+        $db->beginTransaction();
+
+        try {
+            $total = array_sum(array_column($cartItems, 'subtotal'));
+
+            $stmt = $db->prepare(
+                'INSERT INTO orders (guest_name, guest_email, guest_phone, status, total, payment_method, delivery_method, delivery_address, notes, created_at, updated_at)
+                 VALUES (:guest_name, :guest_email, :guest_phone, :status, :total, :payment_method, :delivery_method, :delivery_address, :notes, NOW(), NOW())
+                 RETURNING *'
+            );
+            $stmt->execute([
+                'guest_name' => $guest['name'] ?? null,
+                'guest_email' => $guest['email'] ?? null,
+                'guest_phone' => $guest['phone'] ?? null,
+                'status' => 'new',
+                'total' => $total,
+                'payment_method' => $payload['payment_method'] ?? 'card',
+                'delivery_method' => $payload['delivery_method'] ?? 'pickup',
+                'delivery_address' => $payload['delivery_address'] ?? 'Не вказано',
+                'notes' => $payload['notes'] ?? null,
+            ]);
+
+            $order = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            foreach ($cartItems as $item) {
+                $itemStmt = $db->prepare(
+                    'INSERT INTO order_items (order_id, product_id, price, quantity, name_snapshot)
+                     VALUES (:order_id, :product_id, :price, :quantity, :name_snapshot)'
+                );
+                $itemStmt->execute([
+                    'order_id' => $order['id'],
+                    'product_id' => $item['product_id'],
+                    'price' => $item['price'],
+                    'quantity' => $item['quantity'],
+                    'name_snapshot' => $item['name'],
+                ]);
+
+                Product::decrementStock($item['product_id'], $item['quantity']);
+            }
+
+            $db->commit();
+
+            return self::findWithItems((int) $order['id']);
+        } catch (Throwable $e) {
+            $db->rollBack();
+            throw $e;
+        }
+    }
+
     public static function all(?string $status = null): array
     {
         if ($status) {

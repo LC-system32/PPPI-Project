@@ -80,21 +80,46 @@ if (!empty($items)) {
 
                             <!-- Доставка -->
                             <div class="mb-4">
-                                <h5 class="fw-semibold mb-2">Доставка</h5>
-                                <p class="mb-1">
-                                    <span class="text-muted">Адреса:</span>
-                                    <?= htmlspecialchars($delivery['delivery_address'] ?? '', ENT_QUOTES, 'UTF-8') ?>
-                                </p>
-                                <p class="mb-1">
-                                    <span class="text-muted">Спосіб доставки:</span>
-                                    <?= htmlspecialchars($delivery['delivery_method'] ?? '', ENT_QUOTES, 'UTF-8') ?>
-                                </p>
-                                <?php if (!empty($delivery['notes'])): ?>
-                                    <p class="mb-0">
-                                        <span class="text-muted">Коментар до замовлення:</span>
-                                        <?= htmlspecialchars($delivery['notes'], ENT_QUOTES, 'UTF-8') ?>
+                                <h5 class="fw-semibold mb-2">Адреса і контакти</h5>
+                                <?php $isAuthenticated = isset($user['id']); ?>
+                                <?php if ($isAuthenticated): ?>
+                                    <p class="mb-1">
+                                        <span class="text-muted">Користувач:</span>
+                                        <?= htmlspecialchars(trim(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? '')), ENT_QUOTES, 'UTF-8') ?: 'Не вказано' ?>
+                                    </p>
+                                    <p class="mb-1">
+                                        <span class="text-muted">Email:</span>
+                                        <?= htmlspecialchars($user['email'] ?? '', ENT_QUOTES, 'UTF-8') ?>
+                                    </p>
+                                    <p class="mb-1">
+                                        <span class="text-muted">Телефон:</span>
+                                        <?= htmlspecialchars($user['phone'] ?? 'Не вказано', ENT_QUOTES, 'UTF-8') ?>
+                                    </p>
+                                <?php else: ?>
+                                    <?php
+                                    $guest = $_SESSION['checkout']['guest'] ?? null;
+                                    ?>
+                                    <p class="mb-1">
+                                        <span class="text-muted">П'ІБ:</span>
+                                        <?= htmlspecialchars($guest['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>
+                                    </p>
+                                    <p class="mb-1">
+                                        <span class="text-muted">Email:</span>
+                                        <?= htmlspecialchars($guest['email'] ?? '', ENT_QUOTES, 'UTF-8') ?>
+                                    </p>
+                                    <p class="mb-1">
+                                        <span class="text-muted">Телефон:</span>
+                                        <?= htmlspecialchars($guest['phone'] ?? '', ENT_QUOTES, 'UTF-8') ?>
                                     </p>
                                 <?php endif; ?>
+                                <p class="mb-1">
+                                    <span class="text-muted">Адреса доставки:</span>
+                                    <?= htmlspecialchars($delivery['delivery_address'] ?? '', ENT_QUOTES, 'UTF-8') ?>
+                                </p>
+                                <p class="mb-0">
+                                    <span class="text-muted">Спосіб доставки:</span>
+                                    <?= htmlspecialchars(delivery_method_label($delivery['delivery_method'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                </p>
                             </div>
 
                             <!-- Оплата -->

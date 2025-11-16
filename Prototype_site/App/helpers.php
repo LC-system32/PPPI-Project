@@ -56,4 +56,23 @@ if (!function_exists('old')) {
     {
         return $_SESSION['flash']['old'][$key] ?? $default;
     }
+
+    if (!function_exists('delivery_method_label')) {
+        /**
+         * Return human-friendly label for delivery method keys.
+         */
+        function delivery_method_label(?string $method): string
+        {
+            if (empty($method)) {
+                return '';
+            }
+
+            return match ($method) {
+                'pickup' => 'Самовивіз',
+                'nova-poshta' => 'Нова Пошта',
+                'courier' => "Кур'\u2019єр",
+                default => ucfirst(str_replace(['-', '_'], ' ', $method)),
+            };
+        }
+    }
 }

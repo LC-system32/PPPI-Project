@@ -57,47 +57,6 @@ $baseParams = [
 ];
 $baseParams = array_filter($baseParams, fn($v) => $v !== null && $v !== '');
 ?>
-
-<!-- HERO / BANNER -->
-<section class="position-relative text-white overflow-hidden">
-    <div class="ratio" style="--bs-aspect-ratio: 28%;">
-        <img src="https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=1600&q=80"
-             class="w-100 h-100 object-fit-cover"
-             alt="<?= $brandName ?>">
-    </div>
-    <div class="position-absolute top-0 start-0 w-100 h-100"
-         style="background: linear-gradient(120deg, rgba(8,8,10,.9), rgba(30,30,30,.6));"></div>
-
-    <div class="container position-absolute top-50 start-50 translate-middle">
-        <div class="row align-items-center g-4">
-            <div class="col-12 col-lg-8">
-                <nav aria-label="breadcrumb" class="mb-3">
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item">
-                            <a class="text-white-50 text-decoration-none" href="/">Головна</a>
-                        </li>
-                        <li class="breadcrumb-item">
-                            <a class="text-white-50 text-decoration-none" href="/brands">Бренди</a>
-                        </li>
-                        <li class="breadcrumb-item active text-white" aria-current="page">
-                            <?= $brandName ?>
-                        </li>
-                    </ol>
-                </nav>
-
-                <p class="text-uppercase text-white-50 small mb-1">Бренд</p>
-                <h1 class="display-5 fw-bold mb-3">
-                    <?= $brandName ?>
-                </h1>
-                <p class="lead text-white-50 mb-0" style="max-width: 640px;">
-                    Запчастини <?= $brandName ?>: популярні позиції, актуальна наявність
-                    та офіційні канали постачання. Оберіть модель авто та відфільтруйте потрібні деталі.
-                </p>
-            </div>
-        </div>
-    </div>
-</section>
-
 <!-- CONTENT -->
 <section class="py-5 bg-body-tertiary">
     <div class="container">
@@ -444,20 +403,48 @@ $baseParams = array_filter($baseParams, fn($v) => $v !== null && $v !== '');
                                         </a>
                                     </li>
 
-                                    <!-- Номери сторінок -->
-                                    <?php for ($i = 1; $i <= $pages; $i++): ?>
-                                        <?php
-                                        $isActive   = ($i === (int)$page);
-                                        $pageParams = http_build_query(array_merge($baseParams, ['page' => $i]));
+                                    <!-- Номери сторінок (інтелектуальна пагінація) -->
+                                    <?php
+                                    $pagesToShow = [];
+                                    $deltaPages = 2; // Скільки сторінок показувати з обох боків від поточної
+
+                                    // Перша сторінка
+                                    $pagesToShow[] = 1;
+
+                                    // Сторінки навколо поточної
+                                    for ($i = max(2, $page - $deltaPages); $i <= min($pages - 1, $page + $deltaPages); $i++) {
+                                        $pagesToShow[] = $i;
+                                    }
+
+                                    // Остання сторінка
+                                    if ($pages > 1) {
+                                        $pagesToShow[] = $pages;
+                                    }
+
+                                    $pagesToShow = array_unique(sort($pagesToShow) === null ? array_reverse(array_unique($pagesToShow)) : $pagesToShow);
+                                    $pagesToShow = array_values(array_unique($pagesToShow));
+                                    sort($pagesToShow);
+
+                                    $lastDisplayed = 0;
+                                    foreach ($pagesToShow as $pageNum):
+                                        // Показуємо "..." якщо є пропуск більш ніж 1 сторінка
+                                        if ($pageNum - $lastDisplayed > 1): ?>
+                                            <li class="page-item mx-1">
+                                                <span class="page-link border-0 px-2 py-2 text-muted">...</span>
+                                            </li>
+                                        <?php endif;
+                                        $isActive = ($pageNum === (int)$page);
+                                        $pageParams = http_build_query(array_merge($baseParams, ['page' => $pageNum]));
                                         ?>
                                         <li class="page-item mx-1 <?= $isActive ? 'active' : '' ?>">
                                             <a class="page-link border-0 rounded-pill px-3 py-2 shadow-sm fw-semibold
                                                        <?= $isActive ? 'bg-dark text-white' : 'bg-white text-dark' ?>"
                                                href="/brand/<?= $brandSlug ?>?<?= $pageParams ?>">
-                                                <?= $i ?>
+                                                <?= $pageNum ?>
                                             </a>
                                         </li>
-                                    <?php endfor; ?>
+                                        <?php $lastDisplayed = $pageNum;
+                                    endforeach; ?>
 
                                     <!-- Наступна -->
                                     <?php

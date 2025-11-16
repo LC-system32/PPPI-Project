@@ -31,7 +31,7 @@ include __DIR__ . '/../../includes/navbar.php';
                         </h2>
                         <div id="order<?= $index ?>" class="accordion-collapse collapse <?= $index === 0 ? 'show' : '' ?>" data-bs-parent="#ordersAccordion">
                             <div class="accordion-body bg-white">
-                                <p class="mb-1"><strong>Доставка:</strong> <?= htmlspecialchars($order['delivery_method'], ENT_QUOTES, 'UTF-8') ?></p>
+                                <p class="mb-1"><strong>Доставка:</strong> <?= htmlspecialchars(delivery_method_label($order['delivery_method'] ?? ''), ENT_QUOTES, 'UTF-8') ?></p>
                                 <p class="mb-3"><strong>Адреса:</strong> <?= htmlspecialchars($order['delivery_address'], ENT_QUOTES, 'UTF-8') ?></p>
                                 <h6 class="fw-semibold mb-3">Склад замовлення</h6>
                                 <ul class="list-group list-group-flush">

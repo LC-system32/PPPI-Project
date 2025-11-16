@@ -188,7 +188,7 @@ if (!empty($items)) {
                             </p>
                             <p class="small mb-0">
                                 <span class="text-muted">Спосіб:</span>
-                                <?= htmlspecialchars($delivery['delivery_method'] ?? '', ENT_QUOTES, 'UTF-8') ?>
+                                <?= htmlspecialchars(delivery_method_label($delivery['delivery_method'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
                             </p>
 
                             <hr class="my-3">

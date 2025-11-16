@@ -5,12 +5,14 @@ namespace App\Controllers;
 use App\Core\Controller;
 use App\Models\Cart;
 use App\Models\Order;
+use App\Models\User;
 
 class OrderController extends Controller
 {
     public function delivery(): void
     {
-        $user = $this->requireUser();
+        // Дозволяємо як авторизованим, так і гостям
+        $user = $this->user();
         $items = Cart::items();
 
         if (!$items) {
@@ -22,6 +24,9 @@ class OrderController extends Controller
         $errors = $this->pullFlash('errors') ?? [];
         $formData = $this->pullFlash('formData')
             ?? ($_SESSION['checkout']['delivery'] ?? [
+                'guest_email' => '',
+                'guest_phone' => '',
+                'guest_name' => '',
                 'delivery_address' => '',
                 'delivery_method' => 'pickup',
                 'notes' => '',
@@ -38,15 +43,25 @@ class OrderController extends Controller
 
     public function storeDelivery(): void
     {
-        $user = $this->requireUser();
+        $user = $this->user();
         $payload = $this->sanitize($_POST);
         $items = Cart::items();
 
-        $errors = $this->validate($payload, [
+        // Валідація для гостя
+        $guestRules = [
             'csrf_token' => ['required', 'csrf'],
             'delivery_address' => ['required', 'min:5'],
             'delivery_method' => ['required'],
-        ]);
+        ];
+
+        // Якщо гість - потрібні додаткові поля
+        if (!$user) {
+            $guestRules['guest_name'] = ['required', 'min:3'];
+            $guestRules['guest_email'] = ['required', 'email'];
+            $guestRules['guest_phone'] = ['required', 'min:10'];
+        }
+
+        $errors = $this->validate($payload, $guestRules);
 
         if (!$items) {
             $errors[] = 'Кошик порожній.';
@@ -64,12 +79,21 @@ class OrderController extends Controller
             'notes' => $payload['notes'] ?? '',
         ];
 
+        // Збережемо дані гостя, якщо це не авторизований користувач
+        if (!$user) {
+            $_SESSION['checkout']['guest'] = [
+                'name' => $payload['guest_name'],
+                'email' => $payload['guest_email'],
+                'phone' => $payload['guest_phone'],
+            ];
+        }
+
         $this->redirect('/checkout/payment');
     }
 
     public function payment(): void
     {
-        $user = $this->requireUser();
+        $user = $this->user();
         $items = Cart::items();
 
         if (!$items) {
@@ -95,7 +119,8 @@ class OrderController extends Controller
 
     public function storePayment(): void
     {
-        $user = $this->requireUser();
+        $user = $this->user();
+        $guest = $_SESSION['checkout']['guest'] ?? null;
         $payload = $this->sanitize($_POST);
 
         $errors = $this->validate($payload, [
@@ -105,6 +130,10 @@ class OrderController extends Controller
 
         if (empty($_SESSION['checkout']['delivery'])) {
             $errors[] = 'Спочатку заповніть дані доставки.';
+        }
+
+        if (!$user && !$guest) {
+            $errors[] = 'Спочатку заповніть контактні дані.';
         }
 
         if ($errors) {
@@ -122,7 +151,7 @@ class OrderController extends Controller
 
     public function confirm(): void
     {
-        $user = $this->requireUser();
+        $user = $this->user();
         $items = Cart::items();
 
         if (!$items) {
@@ -144,12 +173,18 @@ class OrderController extends Controller
         $total = Cart::total();
         $errors = $this->pullFlash('errors') ?? [];
 
+        // If delivery address is missing but user has address in profile, use it for display
+        if (empty($delivery['delivery_address']) && !empty($user['address'])) {
+            $delivery['delivery_address'] = $user['address'];
+        }
+
         $this->view('checkout/confirm', compact('user', 'items', 'total', 'errors', 'delivery', 'payment'));
     }
 
     public function place(): void
     {
-        $user = $this->requireUser();
+        $user = $this->user();
+        $guest = $_SESSION['checkout']['guest'] ?? null;
         $items = Cart::items();
 
         $delivery = $_SESSION['checkout']['delivery'] ?? null;
@@ -166,6 +201,9 @@ class OrderController extends Controller
         if (!$payment) {
             $errors[] = 'Немає обраного способу оплати.';
         }
+        if (!$user && !$guest) {
+            $errors[] = 'Дані про замовника не заповнені.';
+        }
 
         if ($errors) {
             $this->flash('errors', $errors);
@@ -173,13 +211,19 @@ class OrderController extends Controller
         }
 
         $payload = [
-            'delivery_address' => $delivery['delivery_address'],
+            'delivery_address' => $delivery['delivery_address'] ?: ($user['address'] ?? ''),
             'delivery_method' => $delivery['delivery_method'],
             'payment_method' => $payment['payment_method'],
             'notes' => $delivery['notes'] ?? '',
         ];
 
-        $order = Order::createFromCart((int) $user['id'], $payload, $items);
+        if ($user) {
+            $order = Order::createFromCart((int) $user['id'], $payload, $items);
+        } else {
+            // Guest checkout - store guest data with order
+            $order = Order::createFromCartGuest($guest, $payload, $items);
+        }
+
         Cart::clear();
         unset($_SESSION['checkout']);
 
@@ -187,7 +231,23 @@ class OrderController extends Controller
             $this->flash('message', 'Замовлення №' . $order['id'] . ' створено.');
         }
 
-        $this->redirect('/orders');
+        if ($user) {
+            $this->redirect('/orders');
+        } else {
+            $this->redirect('/checkout/success?order_id=' . ($order['id'] ?? ''));
+        }
+    }
+
+    public function success(): void
+    {
+        $orderId = $_GET['order_id'] ?? null;
+        $order = $orderId ? Order::findWithItems((int) $orderId) : null;
+
+        if (!$order || ($order['user_id'] && !$this->user())) {
+            $this->redirect('/');
+        }
+
+        $this->view('checkout/success', compact('order'));
     }
 
     public function userOrders(): void

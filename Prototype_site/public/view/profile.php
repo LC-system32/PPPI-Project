@@ -59,23 +59,6 @@ $savedVehicles = $savedVehicles ?? [];
                     </div>
                 </div>
             </div>
-            <div class="col-lg-4">
-                <div class="card border-0 rounded-4 bg-dark bg-opacity-50 text-white">
-                    <div class="card-body">
-                        <p class="text-uppercase text-white-50 mb-1">Статус клубу</p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h3 class="mb-0 text-warning">AutoParts+</h3>
-                            <span class="badge bg-warning text-dark">Active</span>
-                        </div>
-                        <p class="small text-white-50 mt-3 mb-2">
-                            Кешбек 5% на кожне замовлення та пріоритетна підтримка.
-                        </p>
-                        <a href="/support" class="btn btn-outline-light btn-sm rounded-pill">
-                            Отримати допомогу
-                        </a>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </section>
@@ -139,6 +122,37 @@ $savedVehicles = $savedVehicles ?? [];
                                        required>
                             </div>
 
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Ім'я</label>
+                                <input type="text"
+                                       name="first_name"
+                                       class="form-control rounded-3"
+                                       value="<?= htmlspecialchars($formData['first_name'] ?? $user->first_name ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                       minlength="2">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Прізвище</label>
+                                <input type="text"
+                                       name="last_name"
+                                       class="form-control rounded-3"
+                                       value="<?= htmlspecialchars($formData['last_name'] ?? $user->last_name ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                       minlength="2">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Телефон</label>
+                                <input type="tel"
+                                       name="phone"
+                                       class="form-control rounded-3"
+                                       value="<?= htmlspecialchars($formData['phone'] ?? $user->phone ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                       minlength="6">
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Адреса доставки</label>
+                                <textarea name="address" class="form-control rounded-3" rows="3"><?= htmlspecialchars($formData['address'] ?? $user->address ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
+                            </div>
+
                             <div class="col-12">
                                 <label class="form-label fw-semibold">Сповіщення</label>
                                 <div class="row g-3">
@@ -191,25 +205,43 @@ $savedVehicles = $savedVehicles ?? [];
 
                             <div class="col-12">
                                 <label class="form-label fw-semibold">Поточний пароль</label>
-                                <input type="password"
-                                       name="current_password"
-                                       class="form-control rounded-3"
-                                       required minlength="8">
+                                <div class="input-group">
+                                    <input type="password"
+                                           id="current_password"
+                                           name="current_password"
+                                           class="form-control"
+                                           required minlength="8">
+                                    <button type="button" class="btn btn-toggle-password" data-target="current_password" aria-label="Показати пароль">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Новий пароль</label>
-                                <input type="password"
-                                       name="new_password"
-                                       class="form-control rounded-3"
-                                       required minlength="8"
-                                       placeholder="Мінімум 8 символів">
+                                <div class="input-group">
+                                    <input type="password"
+                                           id="new_password"
+                                           name="new_password"
+                                           class="form-control"
+                                           required minlength="8"
+                                           placeholder="Мінімум 8 символів">
+                                    <button type="button" class="btn btn-toggle-password" data-target="new_password" aria-label="Показати пароль">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Підтвердіть пароль</label>
-                                <input type="password"
-                                       name="confirm_password"
-                                       class="form-control rounded-3"
-                                       required minlength="8">
+                                <div class="input-group">
+                                    <input type="password"
+                                           id="confirm_password"
+                                           name="confirm_password"
+                                           class="form-control"
+                                           required minlength="8">
+                                    <button type="button" class="btn btn-toggle-password" data-target="confirm_password" aria-label="Показати пароль">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
                             </div>
                             <div class="col-12 d-flex justify-content-end">
                                 <button type="submit"
@@ -324,59 +356,6 @@ $savedVehicles = $savedVehicles ?? [];
 
             <!-- ПРАВА КОЛОНКА -->
             <div class="col-lg-4">
-                <!-- ЗБЕРЕЖЕНІ АВТО -->
-                <div class="card rounded-4 border-0 shadow-sm mb-4">
-                    <div class="card-body p-4">
-                        <p class="text-uppercase text-muted small mb-1">Збережені авто</p>
-                        <h2 class="h5 mb-3">Ваші транспортні засоби</h2>
-
-                        <?php if (!empty($savedVehicles) && is_array($savedVehicles)): ?>
-                            <?php foreach ($savedVehicles as $vehicle): ?>
-                                <?php
-                                $title   = htmlspecialchars($vehicle['title']   ?? 'Автомобіль', ENT_QUOTES, 'UTF-8');
-                                $year    = htmlspecialchars((string)($vehicle['year'] ?? ''), ENT_QUOTES, 'UTF-8');
-                                $vin     = htmlspecialchars($vehicle['vin']     ?? '-', ENT_QUOTES, 'UTF-8');
-                                $mileage = htmlspecialchars($vehicle['mileage'] ?? '-', ENT_QUOTES, 'UTF-8');
-                                ?>
-                                <div class="vehicle-tile rounded-3 p-3 mb-3">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <strong><?= $title ?></strong>
-                                        <?php if ($year !== ''): ?>
-                                            <span class="badge bg-light text-dark"><?= $year ?></span>
-                                        <?php endif; ?>
-                                    </div>
-                                    <p class="text-muted mb-1 small">VIN: <?= $vin ?></p>
-                                    <p class="text-muted mb-0 small">Пробіг: <?= $mileage ?></p>
-                                </div>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <p class="text-muted small mb-3">
-                                Ви ще не додали жодного авто. Додайте автомобіль, щоб швидко
-                                підбирати сумісні запчастини.
-                            </p>
-                        <?php endif; ?>
-
-                        <button class="btn btn-outline-dark w-100 rounded-pill">
-                            Додати автомобіль
-                        </button>
-                    </div>
-                </div>
-
-                <!-- АДРЕСИ ДОСТАВКИ -->
-                <div class="card rounded-4 border-0 shadow-sm mb-4">
-                    <div class="card-body p-4">
-                        <p class="text-uppercase text-muted small mb-1">Адреси доставки</p>
-                        <h2 class="h5 mb-3">Керування адресами</h2>
-                        <p class="text-muted small">
-                            Додайте адресу, щоб швидко оформляти замовлення. Ви зможете додати
-                            кілька адрес і обрати основну.
-                        </p>
-                        <button class="btn btn-warning text-dark w-100 rounded-pill fw-semibold">
-                            Додати адресу
-                        </button>
-                    </div>
-                </div>
-
                 <!-- ПІДТРИМКА -->
                 <div class="card rounded-4 border-0 shadow-sm">
                     <div class="card-body p-4">
@@ -417,19 +396,88 @@ $savedVehicles = $savedVehicles ?? [];
         overflow: hidden;
     }
 
-    .profile-content .card {
-        transition: transform .2s ease, box-shadow .2s ease;
-    }
-
-    .profile-content .card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
-    }
-
     .vehicle-tile {
         background: #f7f8fa;
         border: 1px dashed #d9dee6;
     }
+
+    /* Password visibility toggle button styling */
+    .btn-toggle-password {
+        position: relative;
+        border-left: none;
+        border-radius: 0 0.375rem 0.375rem 0 !important;
+        background-color: #f8f9fa;
+        color: #6c757d;
+        transition: all 0.2s ease-in-out;
+        padding: 0.5rem 0.75rem;
+        cursor: pointer;
+    }
+
+    .btn-toggle-password:hover:not(:disabled) {
+        background-color: #e9ecef;
+        color: #495057;
+        border-color: #dee2e6;
+    }
+
+    .btn-toggle-password:focus {
+        outline: 2px solid transparent;
+        outline-offset: 2px;
+        box-shadow: inset 0 0 0 2px #ffc107;
+    }
+
+    .btn-toggle-password[aria-pressed="true"] {
+        background-color: #fff3cd;
+        color: #856404;
+        border-color: #ffc107;
+    }
+
+    .btn-toggle-password i {
+        pointer-events: none;
+    }
+
+    /* Adjust input-group styling for password fields */
+    .input-group .form-control[type="password"],
+    .input-group .form-control[type="text"] {
+        border-radius: 0.375rem 0 0 0.375rem;
+    }
+
+    .input-group .btn-toggle-password + .form-control {
+        border-radius: 0 0.375rem 0.375rem 0;
+        border-left: none;
+    }
 </style>
+
+<script>
+    // Toggle password visibility for inputs with the .btn-toggle-password button
+    (function() {
+        function toggleButtonState(btn, isNowShown) {
+            btn.setAttribute('aria-pressed', isNowShown ? 'true' : 'false');
+            btn.setAttribute('aria-label', isNowShown ? 'Сховати пароль' : 'Показати пароль');
+            btn.innerHTML = isNowShown ? '<i class="bi bi-eye-slash"></i>' : '<i class="bi bi-eye"></i>';
+        }
+
+        document.addEventListener('click', function (e) {
+            var btn = e.target.closest && e.target.closest('.btn-toggle-password');
+            if (!btn) return;
+            var targetId = btn.getAttribute('data-target');
+            if (!targetId) return;
+            var input = document.getElementById(targetId);
+            if (!input) return;
+            var isPassword = input.getAttribute('type') === 'password';
+            input.setAttribute('type', isPassword ? 'text' : 'password');
+            toggleButtonState(btn, isPassword);
+        }, false);
+
+        // Optional: make sure buttons reflect initial state (hidden)
+        document.addEventListener('DOMContentLoaded', function () {
+            var buttons = document.querySelectorAll('.btn-toggle-password');
+            buttons.forEach(function (btn) {
+                btn.setAttribute('aria-pressed', 'false');
+                btn.setAttribute('aria-label', 'Показати пароль');
+                btn.innerHTML = '<i class="bi bi-eye"></i>';
+            });
+        });
+    })();
+</script>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

@@ -4,6 +4,9 @@ include __DIR__ . '/../../includes/navbar.php';
 
 $csrf = csrf_token();
 
+// Debug: Check if user is authenticated
+$isAuthenticated = isset($user) && is_array($user) && !empty($user['id']);
+
 // підрахунок кількості товарів для правого блоку
 $totalItems = 0;
 if (!empty($items)) {
@@ -74,18 +77,101 @@ if (!empty($items)) {
 
                             <form action="/checkout/delivery" method="POST" class="row g-3">
                                 <input type="hidden" name="csrf_token"
-                                       value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
+                                    value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
+
+                                <?php if (!$isAuthenticated): ?>
+                                    <!-- Guest contact information -->
+                                    <h5 class="col-12 fw-semibold mb-0">Контактна інформація</h5>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">П'ІБ <span class="text-danger">*</span></label>
+                                        <input type="text"
+                                            name="guest_name"
+                                            class="form-control"
+                                            minlength="3"
+                                            maxlength="255"
+                                            value="<?= htmlspecialchars($formData['guest_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                            required>
+                                        <small class="text-muted">Мінімум 3 символи</small>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Email <span class="text-danger">*</span></label>
+                                        <input type="email"
+                                            name="guest_email"
+                                            class="form-control"
+                                            value="<?= htmlspecialchars($formData['guest_email'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                            required>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Телефон <span class="text-danger">*</span></label>
+                                        <input type="tel"
+                                            name="guest_phone"
+                                            class="form-control"
+                                            minlength="10"
+                                            value="<?= htmlspecialchars($formData['guest_phone'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                            required>
+                                        <small class="text-muted">Мінімум 10 цифр</small>
+                                    </div>
+
+                                    <div class="col-12 text-muted small">
+                                        Мати обліковий запис? <a href="/login" class="text-decoration-none">Увійти</a>
+                                    </div>
+
+                                    <hr class="col-12">
+                                <?php else: ?>
+                                    <!-- Registered user info section -->
+                                    <h5 class="col-12 fw-semibold mb-0">Ваші дані</h5>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">П'ІБ</label>
+                                        <input type="text"
+                                            class="form-control"
+                                            value="<?= htmlspecialchars(trim(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? '')), ENT_QUOTES, 'UTF-8') ?: 'Не вказано' ?>"
+                                            disabled>
+                                        <small class="text-muted">З вашого профіля</small>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Email</label>
+                                        <input type="text"
+                                            class="form-control"
+                                            value="<?= htmlspecialchars($user['email'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                            disabled>
+                                        <small class="text-muted">З вашого профіля</small>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Телефон</label>
+                                        <input type="text"
+                                            class="form-control"
+                                            value="<?= htmlspecialchars($user['phone'] ?? 'Не вказано', ENT_QUOTES, 'UTF-8') ?>"
+                                            disabled>
+                                        <small class="text-muted">З вашого профіля</small>
+                                    </div>
+
+                                    <hr class="col-12">
+                                <?php endif; ?>
+
+                                <h5 class="col-12 fw-semibold mb-0">Доставка</h5>
 
                                 <div class="col-12">
-                                    <label class="form-label">Адреса доставки</label>
+                                    <label class="form-label">Адреса доставки <span class="text-danger">*</span></label>
+                                    <?php
+                                    $addressValue = $formData['delivery_address'] ?? '';
+                                    if (empty($addressValue) && !empty($user['address'])) {
+                                        $addressValue = $user['address'];
+                                    }
+                                    ?>
                                     <textarea name="delivery_address"
-                                              class="form-control"
-                                              rows="3"
-                                              required><?= htmlspecialchars($formData['delivery_address'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
+                                        class="form-control"
+                                        rows="3"
+                                        required><?= htmlspecialchars($addressValue, ENT_QUOTES, 'UTF-8') ?></textarea>
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Спосіб доставки</label>
+                                    <label class="form-label">Спосіб доставки <span class="text-danger">*</span></label>
                                     <select name="delivery_method" class="form-select" required>
                                         <option value="pickup" <?= (($formData['delivery_method'] ?? '') === 'pickup') ? 'selected' : '' ?>>
                                             Самовивіз
@@ -102,8 +188,8 @@ if (!empty($items)) {
                                 <div class="col-12">
                                     <label class="form-label">Коментар до замовлення</label>
                                     <textarea name="notes"
-                                              class="form-control"
-                                              rows="2"><?= htmlspecialchars($formData['notes'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
+                                        class="form-control"
+                                        rows="2"><?= htmlspecialchars($formData['notes'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
                                 </div>
 
                                 <div class="col-12 d-flex justify-content-between mt-2">
@@ -119,55 +205,9 @@ if (!empty($items)) {
                         </div>
                     </div>
                 </div>
-
-                <!-- Права колонка: підсумок замовлення -->
-                <div class="col-lg-4">
-                    <div class="card border-0 shadow-sm rounded-4 position-sticky top-0">
-                        <div class="card-body p-4">
-                            <h2 class="h5 fw-bold mb-3">Підсумок замовлення</h2>
-
-                            <div class="d-flex justify-content-between mb-2">
-                                <span class="text-muted">Товарів</span>
-                                <span><?= $totalItems ?></span>
-                            </div>
-
-                            <div class="d-flex justify-content-between mb-2">
-                                <span class="text-muted">Сума товарів</span>
-                                <span><?= number_format($total ?? 0, 2, '.', ' ') ?> ₴</span>
-                            </div>
-
-                            <div class="d-flex justify-content-between mb-2">
-                                <span class="text-muted">Знижка</span>
-                                <span>0 ₴</span>
-                            </div>
-
-                            <hr>
-
-                            <div class="d-flex justify-content-between align-items-baseline mb-3">
-                                <span class="fw-semibold">До сплати</span>
-                                <span class="h4 mb-0"><?= number_format($total ?? 0, 2, '.', ' ') ?> ₴</span>
-                            </div>
-
-                            <button type="submit"
-                                    form="checkout-submit-form"
-                                    class="btn btn-dark w-100 btn-lg rounded-pill mb-2"
-                                    disabled>
-                                Оформити замовлення
-                            </button>
-
-                            <button type="button"
-                                    class="btn btn-outline-secondary w-100 btn-sm rounded-pill"
-                                    onclick="window.location.href='/catalog'">
-                                Продовжити покупки
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
             </div>
         </div>
     </div>
 </section>
 
 <?php include __DIR__ . '/../../includes/footer.php'; ?>
-

@@ -8,11 +8,11 @@
         style="background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.75)); z-index:1;"></div>
 
     <div class="container position-relative py-5" style="z-index:1;">
-        <h1 class="fw-bold display-5 mb-3 fade-in">Повернення товарів</h1>
-        <p class="lead mb-4 mx-auto fade-in-delay" style="max-width: 720px;">
-            Ми прагнемо, щоб покупки в AutoParts були максимально зручними. Якщо товар не підійшов — ви легко зможете його повернути або обміняти.
+        <h1 class="fw-bold display-5 mb-3 fade-in">Можливість швидко повернути або обміняти товар</h1>
+        <p class="lead mb-4 mx-auto fade-in-delay" style="max-width: 900px; text-align: left;">
+            Як користувач, я хочу мати можливість повернути або обміняти товар, якщо він прийшов пошкодженим, не відповідає замовленню або характеристикам на сайті, щоб захистити свої права і отримати правильний товар.
         </p>
-        <a href="#how-to-return" class="btn btn-warning btn-lg pulse-hover">Як повернути товар</a>
+        <a href="/returns/create" class="btn btn-warning btn-lg pulse-hover">Оформити повернення</a>
     </div>
 
     <img src="https://abrakadabra.fun/uploads/posts/2022-03/thumbs/1647208236_13-abrakadabra-fun-p-fon-dlya-bannera-avtozapchasti-23.jpg"
@@ -55,7 +55,17 @@
 </section>
 
 <section class="py-5 bg-light fade-in">
-    <div class="container">
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="p-4 rounded-4 shadow-sm bg-white mb-3">
+                        <h5 class="fw-semibold">Опис</h5>
+                        <p class="mb-0 text-muted">
+                            Реалізувати функціонал або процедуру повернення товару відповідно до Закону України «Про захист прав споживачів». Покупець має право повернути товар протягом 14 днів з дня купівлі. Передбачити форму для оформлення повернення, інструкції для користувача та автоматичне оновлення статусу замовлення в системі.
+                        </p>
+                    </div>
+                </div>
+            </div>
         <h2 class="fw-bold mb-5 text-center">Що можна та не можна повернути</h2>
         <div class="row g-5">
             <div class="col-md-6 slide-up">
@@ -108,7 +118,7 @@
         </div>
 
         <div class="text-center fade-in-delay2">
-            <a href="/return-form" class="btn btn-warning btn-lg pulse-hover"><i class="bi bi-arrow-repeat me-2"></i>Заповнити заявку на повернення</a>
+            <a href="/returns/create" class="btn btn-warning btn-lg pulse-hover"><i class="bi bi-arrow-repeat me-2"></i>Заповнити заявку на повернення</a>
         </div>
     </div>
 </section>

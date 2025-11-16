@@ -41,24 +41,26 @@ class Product extends Model
 
         if (!empty($filters['keyword'])) {
             $keyword = (string) $filters['keyword'];
+            $keyword = trim($keyword);
+            
+            if (!empty($keyword)) {
+                // Базовий пошук по назві, опису, SKU та slug (частковий збіг)
+                $searchClauses = [
+                    'p.name ILIKE :keyword_like',
+                    'p.description ILIKE :keyword_like',
+                    'p.sku ILIKE :keyword_like',
+                    'p.slug ILIKE :keyword_like',
+                ];
 
-            // Базовий пошук по назві, опису, SKU та slug (частковий збіг)
-            $searchClauses = [
-                'p.name ILIKE :keyword_like',
-                'p.description ILIKE :keyword_like',
-                'p.sku ILIKE :keyword_like',
-                'p.slug ILIKE :keyword_like',
-            ];
+                // Якщо рядок без пробілів (схожий на артикул) — додаємо точний збіг по SKU
+                if (strpos($keyword, ' ') === false) {
+                    $searchClauses[] = 'p.sku = :keyword_exact';
+                    $params['keyword_exact'] = $keyword;
+                }
 
-            // Якщо рядок без пробілів (схожий на артикул) — додаємо точний збіг по SKU/slug
-            if (strpos($keyword, ' ') === false) {
-                $searchClauses[] = 'UPPER(p.sku) = UPPER(:keyword_exact)';
-                $searchClauses[] = 'UPPER(p.slug) = UPPER(:keyword_exact)';
-                $params['keyword_exact'] = $keyword;
+                $conditions[] = '(' . implode(' OR ', $searchClauses) . ')';
+                $params['keyword_like'] = '%' . $keyword . '%';
             }
-
-            $conditions[] = '(' . implode(' OR ', $searchClauses) . ')';
-            $params['keyword_like'] = '%' . $keyword . '%';
         }
 
         if (!empty($filters['category_name'])) {
@@ -157,39 +159,111 @@ class Product extends Model
         ];
     }
 
-    public static function paginateByCarModel(int $carModelId, int $page = 1, int $perPage = 12): array
+    public static function paginateByCarModel(int $carModelId, int $page = 1, int $perPage = 12, array $filters = []): array
     {
         $page = max($page, 1);
         $perPage = max($perPage, 1);
         $offset = ($page - 1) * $perPage;
+        
+        $conditions = [
+            'p.is_active = true',
+            'pcm.car_model_id = :car_model_id'
+        ];
+        $params = ['car_model_id' => $carModelId];
+
+        // Фільтр по назві або артикулу
+        if (!empty($filters['q'])) {
+            $keyword = (string) $filters['q'];
+            $keyword = trim($keyword);
+            
+            if (!empty($keyword)) {
+                $searchClauses = [
+                    'p.name ILIKE :keyword_like',
+                    'p.sku ILIKE :keyword_like',
+                ];
+                
+                // Якщо це не мультислово, додаємо точний пошук по SKU (без пробілів)
+                if (strpos($keyword, ' ') === false) {
+                    $searchClauses[] = 'p.sku = :keyword_exact';
+                    $params['keyword_exact'] = $keyword;
+                }
+                
+                $conditions[] = '(' . implode(' OR ', $searchClauses) . ')';
+                $params['keyword_like'] = '%' . $keyword . '%';
+            }
+        }
+
+        // Фільтр по мінімальній ціні
+        if (!empty($filters['price_min']) || (isset($filters['price_min']) && $filters['price_min'] === '0')) {
+            $conditions[] = 'p.price >= :price_min';
+            $params['price_min'] = (float) $filters['price_min'];
+        }
+
+        // Фільтр по максимальній ціні
+        if (!empty($filters['price_max']) || (isset($filters['price_max']) && $filters['price_max'] === '0')) {
+            $conditions[] = 'p.price <= :price_max';
+            $params['price_max'] = (float) $filters['price_max'];
+        }
+
+        // Фільтр по наявності
+        if (!empty($filters['in_stock'])) {
+            $conditions[] = 'p.stock > 0';
+        }
+
+        $where = implode(' AND ', $conditions);
+
+        // Сортування
+        $sort = $filters['sort'] ?? 'default';
+        switch ($sort) {
+            case 'price_asc':
+                $orderBy = 'p.price ASC';
+                break;
+            case 'price_desc':
+                $orderBy = 'p.price DESC';
+                break;
+            case 'name_asc':
+                $orderBy = 'p.name ASC';
+                break;
+            case 'name_desc':
+                $orderBy = 'p.name DESC';
+                break;
+            default:
+                $orderBy = 'p.created_at DESC';
+                break;
+        }
 
         $sql = "SELECT p.*, c.name AS category_name, b.name AS brand_name
                 FROM products p
                 JOIN product_car_model pcm ON pcm.product_id = p.id
                 LEFT JOIN categories c ON c.id = p.category_id
                 LEFT JOIN brands b ON b.id = p.brand_id
-                WHERE p.is_active = true
-                  AND pcm.car_model_id = :car_model_id
-                ORDER BY p.created_at DESC
+                WHERE {$where}
+                ORDER BY {$orderBy}
                 LIMIT :limit OFFSET :offset";
 
         $stmt = self::db()->prepare($sql);
-        $stmt->bindValue(':car_model_id', $carModelId, PDO::PARAM_INT);
+        
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(':' . $key, $value);
+        }
+        
         $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
         $stmt->execute();
 
         $items = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
-        $countStmt = self::db()->prepare(
-            'SELECT COUNT(*)
-             FROM products p
-             JOIN product_car_model pcm ON pcm.product_id = p.id
-             WHERE p.is_active = true
-               AND pcm.car_model_id = :car_model_id'
-        );
-        $countStmt->bindValue(':car_model_id', $carModelId, PDO::PARAM_INT);
+        $countSql = "SELECT COUNT(*)
+                     FROM products p
+                     JOIN product_car_model pcm ON pcm.product_id = p.id
+                     WHERE {$where}";
+        
+        $countStmt = self::db()->prepare($countSql);
+        foreach ($params as $key => $value) {
+            $countStmt->bindValue(':' . $key, $value);
+        }
         $countStmt->execute();
+        
         $total = (int) $countStmt->fetchColumn();
         $pages = $total > 0 ? (int) ceil($total / $perPage) : 0;
 

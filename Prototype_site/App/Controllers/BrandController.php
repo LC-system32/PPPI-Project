@@ -15,65 +15,42 @@ class BrandController extends Controller
 
         $currentQuery  = trim((string) ($filters['q'] ?? ''));
         $currentLetter = (string) ($filters['letter'] ?? '');
-        $currentType   = (string) ($filters['type'] ?? '');
         $currentSort   = (string) ($filters['sort'] ?? '');
 
-        // Для списку брендів показуємо лише бренди виробників запчастин,
-        // які реально присутні у товарах.
-        $brands = Brand::allForProducts();
+        // ⬇️ ТУТ ГОЛОВНЕ ВИПРАВЛЕННЯ ⬇️
+        $brands = Brand::allCarBrands();  // показує МАРКИ АВТО
 
+        // Пошук
         if ($currentQuery !== '') {
             $q = mb_strtolower($currentQuery);
-            $brands = array_values(array_filter($brands, static function (array $brand) use ($q): bool {
-                $name = mb_strtolower((string) ($brand['name'] ?? ''));
-                $slug = mb_strtolower((string) ($brand['slug'] ?? ''));
-
-                return mb_strpos($name, $q) !== false || mb_strpos($slug, $q) !== false;
+            $brands = array_values(array_filter($brands, static function ($brand) use ($q) {
+                return mb_strpos(mb_strtolower($brand['name']), $q) !== false
+                    || mb_strpos(mb_strtolower($brand['slug']), $q) !== false;
             }));
         }
 
+        // Фільтр по першій букві
         if ($currentLetter !== '') {
             $letter = mb_strtoupper($currentLetter);
-            $brands = array_values(array_filter($brands, static function (array $brand) use ($letter): bool {
-                $name = trim((string) ($brand['name'] ?? ''));
-                if ($name === '') {
-                    return false;
-                }
-                $first = mb_strtoupper(mb_substr($name, 0, 1));
-
-                return $first === $letter;
+            $brands = array_values(array_filter($brands, static function ($brand) use ($letter) {
+                return mb_strtoupper(mb_substr($brand['name'], 0, 1)) === $letter;
             }));
         }
 
+        // Сортування
         if ($currentSort === 'name_asc') {
-            usort($brands, static function (array $a, array $b): int {
-                return strcasecmp((string) ($a['name'] ?? ''), (string) ($b['name'] ?? ''));
-            });
+            usort($brands, fn($a, $b) => strcasecmp($a['name'], $b['name']));
         } elseif ($currentSort === 'name_desc') {
-            usort($brands, static function (array $a, array $b): int {
-                return strcasecmp((string) ($b['name'] ?? ''), (string) ($a['name'] ?? ''));
-            });
+            usort($brands, fn($a, $b) => strcasecmp($b['name'], $a['name']));
         } elseif ($currentSort === 'popular_desc') {
-            usort($brands, static function (array $a, array $b): int {
-                $countA = (int) ($a['products_count'] ?? 0);
-                $countB = (int) ($b['products_count'] ?? 0);
-
-                if ($countA === $countB) {
-                    return strcasecmp((string) ($a['name'] ?? ''), (string) ($b['name'] ?? ''));
-                }
-
-                return $countB <=> $countA;
-            });
+            usort($brands, fn($a, $b) => $b['products_count'] <=> $a['products_count']);
         }
-
-        $page = 'brands';
 
         $this->view('brand/index', [
             'brands' => $brands,
-            'page'   => $page,
+            'page'   => 'brands',
         ]);
     }
-
     public function show(string $slug): void
     {
         $brand = Brand::findBySlug($slug);
@@ -84,7 +61,6 @@ class BrandController extends Controller
         }
 
         $filters = $this->sanitize($_GET);
-
         $page = max((int) ($filters['page'] ?? 1), 1);
 
         // Моделі авто цього бренду (якщо є) – означає, що це "марка авто"
@@ -100,21 +76,22 @@ class BrandController extends Controller
             'sort'          => $filters['sort'] ?? null,
         ];
 
-        // Якщо бренд є саме маркою авто (є car_models.brand = brand.name),
-        // показуємо всі запчастини, сумісні з цими авто, незалежно від бренду запчастини.
-        // Якщо ні – працюємо як раніше, це бренд виробника запчастин.
+        // Якщо бренд – марка авто: показуємо всі запчастини, сумісні з цими авто,
+        // незалежно від бренда виробника запчастини.
         if ($hasCarModels) {
             $query['car_brand'] = $brand['name'];
         } else {
+            // Якщо це виробник запчастин – фільтр по brand_id
             $query['brand_id'] = $brand['id'];
         }
 
         $products = Product::paginate($page, 12, $query);
 
         $this->view('brand/show', [
-            'brand'     => $brand,
-            'products'  => $products,
-            'carModels' => $carModels,
+            'brand'      => $brand,
+            'products'   => $products,
+            'carModels'  => $carModels,
+            'hasCarModels' => $hasCarModels,
         ]);
     }
 }

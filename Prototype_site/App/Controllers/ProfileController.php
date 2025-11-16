@@ -32,6 +32,10 @@ class ProfileController extends Controller
         $formData = $this->pullFlash('formData') ?? [
             'login' => $user->login,
             'email' => $user->email,
+            'first_name' => $user->first_name ?? '',
+            'last_name' => $user->last_name ?? '',
+            'phone' => $user->phone ?? '',
+            'address' => $user->address ?? '',
         ];
 
         $recentOrders = Order::byUser((int) $user->id, 5);
@@ -56,10 +60,18 @@ class ProfileController extends Controller
             'csrf_token' => ['required', 'csrf'],
             'login' => ['required', 'min:3', 'max:32'],
             'email' => ['required', 'email'],
+            'first_name' => ['nullable', 'min:2'],
+            'last_name' => ['nullable', 'min:2'],
+            'phone' => ['nullable', 'min:6'],
+            'address' => ['nullable', 'min:5'],
         ]);
 
         $login = (string) ($payload['login'] ?? '');
         $email = (string) ($payload['email'] ?? '');
+        $firstName = isset($payload['first_name']) ? trim((string)$payload['first_name']) : null;
+        $lastName = isset($payload['last_name']) ? trim((string)$payload['last_name']) : null;
+        $phone = isset($payload['phone']) ? trim((string)$payload['phone']) : null;
+        $address = isset($payload['address']) ? trim((string)$payload['address']) : null;
 
         if (!$errors) {
             $existingEmail = User::findByEmail($email);
@@ -76,15 +88,26 @@ class ProfileController extends Controller
         if ($errors) {
             $this->flash('errors', $errors);
             $this->flash('errorContext', 'details');
-            $this->flash('formData', ['login' => $login, 'email' => $email]);
+            $this->flash('formData', [
+                'login' => $login,
+                'email' => $email,
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'phone' => $phone,
+                'address' => $address,
+            ]);
             $this->flash('activeSection', 'details');
             $this->redirect('/profile');
         }
 
-        User::updateProfile((int) $sessionUser['id'], $login, $email);
+        User::updateProfile((int) $sessionUser['id'], $login, $email, $firstName, $lastName, $phone, $address);
 
         $_SESSION['user']['login'] = $login;
         $_SESSION['user']['email'] = $email;
+        $_SESSION['user']['first_name'] = $firstName;
+        $_SESSION['user']['last_name'] = $lastName;
+        $_SESSION['user']['phone'] = $phone;
+        $_SESSION['user']['address'] = $address;
 
         $this->flash('message', 'Профіль оновлено.');
         $this->flash('activeSection', 'details');

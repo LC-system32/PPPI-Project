@@ -34,12 +34,45 @@ class CarModelController extends Controller
             return;
         }
 
+        // Обробка параметрів фільтрів та сортування
+        $filters = [];
+        
+        // Пошук по назві або артикулу
+        if (!empty($_GET['q'])) {
+            $filters['q'] = $_GET['q'];
+        }
+        
+        // Фільтр по ціні
+        if (!empty($_GET['price_min']) || (isset($_GET['price_min']) && $_GET['price_min'] === '0')) {
+            $filters['price_min'] = $_GET['price_min'];
+        }
+        if (!empty($_GET['price_max']) || (isset($_GET['price_max']) && $_GET['price_max'] === '0')) {
+            $filters['price_max'] = $_GET['price_max'];
+        }
+        
+        // Фільтр по наявності
+        if (!empty($_GET['in_stock'])) {
+            $filters['in_stock'] = $_GET['in_stock'];
+        }
+        
+        // Сортування
+        if (!empty($_GET['sort'])) {
+            $filters['sort'] = $_GET['sort'];
+        }
+        
+        // Очищення фільтрів
+        if (!empty($_GET['clear'])) {
+            $filters = [];
+        }
+
         $page = max((int) ($_GET['page'] ?? 1), 1);
-        $products = Product::paginateByCarModel((int) $carModel['id'], $page, 12);
+        $products = Product::paginateByCarModel((int) $carModel['id'], $page, 12, $filters);
 
         $this->view('car_model/show', [
             'carModel' => $carModel,
             'products' => $products,
+            'filters' => $filters,
+            'brand' => $brand,
             'brandSlug' => $brandSlug,
             'modelSlug' => $modelSlug,
         ]);

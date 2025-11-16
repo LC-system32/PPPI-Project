@@ -111,4 +111,25 @@ class Brand extends Model
     {
         return self::query('DELETE FROM brands WHERE id = :id', ['id' => $id])->rowCount() > 0;
     }
+    public static function allCarBrands(): array
+    {
+        $sql = '
+            SELECT
+                b.*,
+                COUNT(DISTINCT p.id) AS products_count
+            FROM brands b
+            JOIN car_models cm ON cm.brand = b.name
+            LEFT JOIN product_car_model pcm ON pcm.car_model_id = cm.id
+            LEFT JOIN products p
+                ON p.id = pcm.product_id
+               AND p.is_active = TRUE
+            GROUP BY b.id
+            HAVING COUNT(DISTINCT p.id) > 0
+            ORDER BY b.name
+        ';
+
+        $stmt = self::query($sql);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
 }

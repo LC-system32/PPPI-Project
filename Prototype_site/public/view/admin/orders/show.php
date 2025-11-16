@@ -20,7 +20,7 @@ $statuses = ['new', 'processing', 'shipped', 'completed', 'cancelled'];
                         <h5 class="mb-3">Інформація</h5>
                         <p class="mb-1"><strong>Статус:</strong> <?= htmlspecialchars($order['status'], ENT_QUOTES, 'UTF-8') ?></p>
                         <p class="mb-1"><strong>Сума:</strong> <?= number_format($order['total'], 2, '.', ' ') ?> ₴</p>
-                        <p class="mb-1"><strong>Доставка:</strong> <?= htmlspecialchars($order['delivery_method'], ENT_QUOTES, 'UTF-8') ?></p>
+                        <p class="mb-1"><strong>Доставка:</strong> <?= htmlspecialchars(delivery_method_label($order['delivery_method'] ?? ''), ENT_QUOTES, 'UTF-8') ?></p>
                         <p class="mb-2"><strong>Адреса:</strong> <?= htmlspecialchars($order['delivery_address'], ENT_QUOTES, 'UTF-8') ?></p>
                         <p class="mb-0"><strong>Коментар:</strong> <?= htmlspecialchars($order['notes'] ?? '—', ENT_QUOTES, 'UTF-8') ?></p>
                     </div>
