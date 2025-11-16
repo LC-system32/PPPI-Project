@@ -1,4 +1,4 @@
-<footer class="footer bg-dark text-light py-5 mt-auto">
+<footer class="footer bg-dark text-light mt-auto">
     <div class="container">
         <h4 class="fw-bold mb-4 text-warning text-center">AutoParts — сервіс для професіоналів та автолюбителів</h4>
 
@@ -32,7 +32,7 @@
             </div>
         </div>
 
-        <hr class="footer-divider my-4 border-light">
+        <hr class="footer-divider my-2 border-light">
 
         <p class="mb-1 text-center">&copy; <?= date('Y') ?> <span class="text-warning fw-semibold">AutoParts</span></p>
     </div>

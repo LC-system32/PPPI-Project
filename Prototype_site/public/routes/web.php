@@ -1,5 +1,4 @@
 <?php
-
 use App\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Controllers\Admin\OrderController as AdminOrderController;
 use App\Controllers\Admin\ProductController as AdminProductController;

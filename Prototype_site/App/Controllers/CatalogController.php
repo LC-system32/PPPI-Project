@@ -14,7 +14,7 @@ class CatalogController extends Controller
         $filters = $this->sanitize($_GET);
         $page    = max((int) ($filters['page'] ?? 1), 1);
 
-        // Підготовка фільтра категорії: беремо вибрану категорію і всі її нащадки
+        // Підготовка категорій: вибрана + всі нащадки
         $categoryIds = null;
         $categoryId  = null;
         if (!empty($filters['category_id'])) {
@@ -22,26 +22,23 @@ class CatalogController extends Controller
             $categoryIds = Category::getDescendantIds($categoryId);
         }
 
-        // Фільтри каталогу: текстовий пошук, категорія (з нащадками), бренд,
-        // лише в наявності, діапазон цін та сортування.
+        // Фільтри каталогу: пошук, категорія, бренд, наявність, ціна, сортування
         $query = [
             'category_ids' => $categoryIds,
-            'brand_id'    => !empty($filters['brand_id']) ? (int) $filters['brand_id'] : null,
-            'keyword'     => $filters['q'] ?? null,
-            'in_stock'    => !empty($filters['in_stock']) ? 1 : null,
-            'price_min'   => $filters['price_min'] ?? null,
-            'price_max'   => $filters['price_max'] ?? null,
-            'sort'        => $filters['sort'] ?? null,
+            'brand_id'     => !empty($filters['brand_id']) ? (int) $filters['brand_id'] : null,
+            'keyword'      => $filters['q'] ?? null,
+            'in_stock'     => !empty($filters['in_stock']) ? 1 : null,
+            'price_min'    => $filters['price_min'] ?? null,
+            'price_max'    => $filters['price_max'] ?? null,
+            'sort'         => $filters['sort'] ?? null,
         ];
 
         $query = array_filter($query, static fn ($value) => $value !== null && $value !== '');
 
         $products   = Product::paginate($page, 12, $query);
         $categories = Category::allWithProductCounts();
-        // У фільтрі каталогу потрібні саме бренди запчастин, а не марки авто
         $brands     = Brand::allForProducts();
 
-        // зберігаємо нормалізоване значення category_id для форми
         if ($categoryId !== null) {
             $filters['category_id'] = (string) $categoryId;
         }
@@ -56,13 +53,17 @@ class CatalogController extends Controller
 
     public function categories(): void
     {
-        // Використовуємо плаский список категорій з підрахованою кількістю товарів,
-        // оскільки в'юшка categories.php реалізує власну фільтрацію та сортування.
+        // Усі категорії з лічильниками товарів
         $categories = Category::allWithProductCounts();
 
-        // В'юшка очікує масив $brands (історична назва), тому передаємо як brands.
+        // На /categories показуємо тільки верхньорівневі категорії (без підкатегорій)
+        $topLevel = array_values(array_filter($categories, static function (array $cat): bool {
+            return empty($cat['parent_id']);
+        }));
+
+        // Вʼюшка працює зі змінною $brands, тому підставляємо туди категорії
         $this->view('catalog/categories', [
-            'brands' => $categories,
+            'brands' => $topLevel,
         ]);
     }
 
@@ -81,8 +82,8 @@ class CatalogController extends Controller
             $children = Category::getChildren((int) $category['id']);
 
             $this->view('catalog/category-root', [
-                'category' => $category,
-                'children' => $children,
+                'category'    => $category,
+                'children'    => $children,
                 'breadcrumbs' => $breadcrumbs,
             ]);
 
@@ -91,10 +92,8 @@ class CatalogController extends Controller
 
         $page = max((int) ($_GET['page'] ?? 1), 1);
 
-        // 1) всі id поточної категорії + підкатегорій
-        $categoryIds = Category::getDescendantIds((int) $category['id']);
-
-        // 2) беремо товари по всьому дереву
+        // Усі нащадки обраної категорії
+        $categoryIds  = Category::getDescendantIds((int) $category['id']);
         $productsPage = Product::findByCategories($categoryIds, $page, 12);
 
         $parent = Category::getParent((int) $category['id']);
@@ -121,7 +120,7 @@ class CatalogController extends Controller
 
     private function buildBreadcrumbs(array $category): array
     {
-        $trail = [];
+        $trail   = [];
         $current = $category;
 
         while ($current) {
@@ -137,3 +136,4 @@ class CatalogController extends Controller
         return $trail;
     }
 }
+

@@ -13,4 +13,4 @@
     <link rel="stylesheet" href="/public/css/navbar.css">
 </head>
 
-<body>
+<body class="d-flex flex-column min-vh-100">
