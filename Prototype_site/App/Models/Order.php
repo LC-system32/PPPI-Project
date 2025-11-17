@@ -32,6 +32,18 @@ class Order extends Model
 
         $order['items'] = self::itemsForOrder($orderId);
 
+        // attach user information when available
+        if (!empty($order['user_id'])) {
+            try {
+                $user = \App\Models\User::find((int) $order['user_id']);
+                if ($user) {
+                    $order['user'] = $user;
+                }
+            } catch (Throwable $e) {
+                // ignore user fetch errors
+            }
+        }
+
         return $order;
     }
 
@@ -156,7 +168,24 @@ class Order extends Model
 
         $orders = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
-        return self::attachItems($orders);
+        $orders = self::attachItems($orders);
+
+        // attach user data for orders made by registered users
+        foreach ($orders as &$order) {
+            if (!empty($order['user_id'])) {
+                try {
+                    $user = \App\Models\User::find((int) $order['user_id']);
+                    if ($user) {
+                        $order['user'] = $user;
+                    }
+                } catch (Throwable $e) {
+                    // ignore
+                }
+            }
+        }
+        unset($order);
+
+        return $orders;
     }
 
     public static function updateStatus(int $id, string $status): bool

@@ -7,6 +7,15 @@ use App\Models\ProductReturn;
 use App\Models\Order;
 use App\Models\User;
 
+// Fallback include: some environments may not pick up the ProductReturn class
+// when the file name doesn't match the class name (we keep `App/Models/Return.php`).
+if (!class_exists(\App\Models\ProductReturn::class)) {
+    $possible = __DIR__ . '/../Models/Return.php';
+    if (file_exists($possible)) {
+        require_once $possible;
+    }
+}
+
 class ReturnController extends Controller
 {
     /**
@@ -177,6 +186,26 @@ class ReturnController extends Controller
         $stats = ProductReturn::getStats();
 
         $this->view('admin/returns/index', compact('returns', 'stats', 'page'));
+    }
+
+    /**
+     * Admin: Show return details
+     */
+    public function adminShow($id): void
+    {
+        $user = $this->user();
+        if (!$user || $user['role_id'] != 1) {
+            $this->view('errors/403');
+            return;
+        }
+
+        $return = ProductReturn::find((int)$id);
+        if (!$return) {
+            $this->view('errors/404');
+            return;
+        }
+
+        $this->view('admin/returns/show', compact('return'));
     }
 
     /**

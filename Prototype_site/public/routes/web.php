@@ -2,6 +2,10 @@
 use App\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Controllers\Admin\OrderController as AdminOrderController;
 use App\Controllers\Admin\ProductController as AdminProductController;
+use App\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Controllers\Admin\BrandController as AdminBrandController;
+use App\Controllers\Admin\UserController as AdminUserController;
+use App\Controllers\Admin\CarModelController as AdminCarModelController;
 use App\Controllers\AuthController;
 use App\Controllers\BrandController;
 use App\Controllers\CarModelController;
@@ -32,6 +36,7 @@ Router::get('/catalog', [CatalogController::class, 'index']);
 Router::get('/categories', [CatalogController::class, 'categories']);
 Router::get('/categories/{slug}', [CatalogController::class, 'category']);
 Router::get('/product/{slug}', [CatalogController::class, 'product']);
+Router::post('/product/{slug}/review', [CatalogController::class, 'addReview']);
 
 // Бренди
 Router::get('/brands', [BrandController::class, 'index']);
@@ -39,7 +44,6 @@ Router::get('/brand/{slug}', [BrandController::class, 'show']);
 
 // Моделі авто
 Router::get('/brand/{brandSlug}/{modelSlug}', [CarModelController::class, 'showBySlug']);
-
 
 // Кошик
 Router::get('/cart', [CartController::class, 'index']);
@@ -99,5 +103,35 @@ Router::group('/admin', function () {
 
     // Повернення товару
     Router::get('/returns', [ReturnController::class, 'adminIndex']);
+    Router::get('/returns/{id}', [ReturnController::class, 'adminShow']);
     Router::post('/returns/{id}/status', [ReturnController::class, 'adminUpdateStatus']);
+
+    // Головна панель адміна (дашборд)
+    Router::get('/', [AdminDashboardController::class, 'index']);
+
+    // Бренди
+    Router::get('/brands', [AdminBrandController::class, 'index']);
+    Router::get('/brands/create', [AdminBrandController::class, 'create']);
+    Router::post('/brands', [AdminBrandController::class, 'store']);
+    Router::get('/brands/{id}/edit', [AdminBrandController::class, 'edit']);
+    Router::post('/brands/{id}', [AdminBrandController::class, 'update']);
+    Router::post('/brands/{id}/delete', [AdminBrandController::class, 'destroy']);
+
+    // Користувачі
+    Router::get('/users', [AdminUserController::class, 'index']);
+    Router::get('/users/{id}/edit', [AdminUserController::class, 'edit']);
+    Router::post('/users/{id}', [AdminUserController::class, 'update']);
+    Router::post('/users/{id}/delete', [AdminUserController::class, 'destroy']);
+
+    // Моделі авто
+    Router::get('/car-models', [AdminCarModelController::class, 'index']);
+    Router::get('/car-models/create', [AdminCarModelController::class, 'create']);
+    Router::post('/car-models', [AdminCarModelController::class, 'store']);
+    Router::post('/car-models/{id}/delete', [AdminCarModelController::class, 'destroy']);
+
+    // Відгуки (модерація)
+    Router::get('/reviews', [\App\Controllers\Admin\ReviewController::class, 'index']);
+    Router::get('/reviews/{id}', [\App\Controllers\Admin\ReviewController::class, 'show']);
+    Router::post('/reviews/{id}/approve', [\App\Controllers\Admin\ReviewController::class, 'approve']);
+    Router::post('/reviews/{id}/reject', [\App\Controllers\Admin\ReviewController::class, 'reject']);
 });

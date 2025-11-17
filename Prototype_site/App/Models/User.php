@@ -120,4 +120,36 @@ class User extends Model
 
         return $user;
     }
+
+    /**
+     * Return all users (basic fields) for admin listing
+     */
+    public static function all(): array
+    {
+        $stmt = self::db()->query('SELECT id, login, email, role_id, created_at FROM users ORDER BY created_at DESC');
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    /**
+     * Alias for findById that returns array instead of object
+     */
+    public static function find(int $id): ?array
+    {
+        $stmt = self::db()->prepare('SELECT * FROM users WHERE id = :id LIMIT 1');
+        $stmt->execute(['id' => $id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    public static function delete(int $id): bool
+    {
+        $stmt = self::db()->prepare('DELETE FROM users WHERE id = :id');
+        return $stmt->execute(['id' => $id]);
+    }
+
+    public static function updateRole(int $id, int $roleId): bool
+    {
+        $stmt = self::db()->prepare('UPDATE users SET role_id = :role_id, updated_at = NOW() WHERE id = :id');
+        return $stmt->execute(['role_id' => $roleId, 'id' => $id]);
+    }
 }

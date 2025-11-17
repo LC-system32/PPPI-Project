@@ -9,11 +9,23 @@ class OrderController extends AdminController
     public function index(): void
     {
         $filters = $this->sanitize($_GET);
+        $q = isset($filters['q']) ? trim((string)$filters['q']) : null;
         $status = $filters['status'] ?? null;
         $orders = Order::all($status);
+        // server-side filtering by q: only by order ID (numeric). If q is not numeric, ignore it.
+        if ($q) {
+            // extract digits only (allow users to type with # or spaces)
+            $digits = preg_replace('/\D+/', '', $q);
+            if ($digits !== '') {
+                $orderId = (int) $digits;
+                $orders = array_values(array_filter($orders, function ($o) use ($orderId) {
+                    return isset($o['id']) && (int)$o['id'] === $orderId;
+                }));
+            }
+        }
         $message = $this->pullFlash('message');
 
-        $this->view('admin/orders/index', compact('orders', 'message', 'status'));
+        $this->view('admin/orders/index', compact('orders', 'message', 'status', 'q'));
     }
 
     public function show(int $id): void

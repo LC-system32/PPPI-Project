@@ -75,6 +75,19 @@ CREATE TABLE product_images (
     is_main BOOLEAN DEFAULT FALSE
 );
 
+-- Product reviews (user-submitted, moderated)
+CREATE TABLE product_reviews (
+    id SERIAL PRIMARY KEY,
+    product_id INT REFERENCES products(id) ON DELETE CASCADE,
+    user_id INT REFERENCES users(id) ON DELETE SET NULL,
+    author VARCHAR(150),
+    rating SMALLINT CHECK (rating >= 0 AND rating <= 5) DEFAULT 0,
+    text TEXT,
+    status VARCHAR(50) NOT NULL DEFAULT 'pending', -- pending, approved, rejected
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 CREATE TABLE product_car_model (
     product_id INT REFERENCES products(id) ON DELETE CASCADE,
     car_model_id INT REFERENCES car_models(id) ON DELETE CASCADE,

@@ -421,6 +421,69 @@ $frequentlyBought = $frequentlyBought ?? [];
                 </p>
             <?php endif; ?>
         </div>
+        <!-- Форма додавання відгуку -->
+        <?php
+        // Flash messages (message / errors) set by controller
+        if (!empty($_SESSION['flash']['message'])): ?>
+            <div class="mt-3 alert alert-success">
+                <?= htmlspecialchars($_SESSION['flash']['message'], ENT_QUOTES, 'UTF-8') ?>
+            </div>
+            <?php unset($_SESSION['flash']['message']);
+        endif;
+
+        if (!empty($_SESSION['flash']['errors'])): ?>
+            <div class="mt-3 alert alert-danger">
+                <ul class="mb-0">
+                    <?php foreach ((array)$_SESSION['flash']['errors'] as $err): ?>
+                        <li><?= htmlspecialchars($err, ENT_QUOTES, 'UTF-8') ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+            <?php unset($_SESSION['flash']['errors']);
+        endif;
+
+        // Old input (if validation failed)
+        $oldRating = old('rating');
+        $oldText   = old('text');
+        // clear old after using
+        if (!empty($_SESSION['flash']['old'])) { unset($_SESSION['flash']['old']); }
+
+        ?>
+
+        <?php if (!empty($_SESSION['user'])): ?>
+            <div class="mt-4 border rounded-4 bg-white p-4">
+                <h3 class="h6 fw-semibold mb-3">Залишити відгук</h3>
+                <form action="/product/<?= htmlspecialchars($product['slug'] ?? '', ENT_QUOTES, 'UTF-8') ?>/review" method="post">
+                    <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+
+                    <div class="mb-3">
+                        <label class="form-label d-block">Оцінка</label>
+                        <div class="btn-group" role="group" aria-label="rating">
+                            <?php for ($i = 5; $i >= 1; $i--): ?>
+                                <input type="radio" class="btn-check" name="rating" id="rating-<?= $i ?>" autocomplete="off" value="<?= $i ?>" <?= ($oldRating == (string)$i) ? 'checked' : '' ?><?= ($oldRating === null && $i === 5) ? ' checked' : '' ?>>
+                                <label class="btn btn-outline-warning btn-sm me-1" for="rating-<?= $i ?>">
+                                    <?php for ($s = 1; $s <= $i; $s++): ?><i class="bi bi-star-fill"></i><?php endfor; ?>
+                                </label>
+                            <?php endfor; ?>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="review-text" class="form-label">Коментар</label>
+                        <textarea id="review-text" name="text" rows="4" class="form-control" maxlength="2000" required><?= htmlspecialchars($oldText ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
+                    </div>
+
+                    <div class="mb-0">
+                        <button class="btn btn-primary" type="submit">Надіслати відгук</button>
+                        <small class="text-muted ms-2">Ваш відгук зберігатиметься як чернетка до модерації.</small>
+                    </div>
+                </form>
+            </div>
+        <?php else: ?>
+            <div class="mt-4 small text-muted">
+                Щоб залишити відгук, будь ласка, <a href="/auth">увійдіть в акаунт</a>.
+            </div>
+        <?php endif; ?>
 
         <!-- СХОЖІ ТОВАРИ -->
         <?php if (!empty($relatedProducts)): ?>

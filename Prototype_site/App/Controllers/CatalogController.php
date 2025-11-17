@@ -6,6 +6,7 @@ use App\Core\Controller;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Review;
 
 class CatalogController extends Controller
 {
@@ -134,7 +135,50 @@ class CatalogController extends Controller
             return;
         }
 
-        $this->view('catalog/product', compact('product'));
+        // Load approved reviews for the product
+        $productId = (int) ($product['id'] ?? 0);
+        $reviews = Review::forProduct($productId);
+        $reviewsCount = Review::countApprovedForProduct($productId);
+
+        $this->view('catalog/product', compact('product', 'reviews', 'reviewsCount'));
+    }
+
+    public function addReview(string $slug): void
+    {
+        $this->requireUser();
+        $payload = $this->sanitize($_POST);
+
+        $errors = $this->validate($payload, [
+            'csrf_token' => ['required', 'csrf'],
+            'rating' => ['required', 'integer', 'min:1', 'max:5'],
+            'text' => ['required', 'min:5', 'max:2000'],
+        ]);
+
+        if ($errors) {
+            $this->flash('errors', $errors);
+            // Preserve old input to repopulate form after redirect
+            $this->flash('old', $payload);
+            $this->redirectBack();
+        }
+
+        $product = Product::findBySlugWithRelations($slug);
+        if (!$product) {
+            $this->notFound();
+        }
+
+        $user = $this->user();
+
+        $review = Review::create([
+            'product_id' => (int) $product['id'],
+            'user_id' => $user['id'] ?? null,
+            'author' => ($user['login'] ?? $user['email'] ?? 'Користувач'),
+            'rating' => (int) ($payload['rating'] ?? 0),
+            'text' => $payload['text'] ?? '',
+            'status' => 'pending', // moderation
+        ]);
+
+        $this->flash('message', 'Дякуємо — ваш відгук надіслано на модерацію.');
+        $this->redirect('/product/' . ($product['slug'] ?? ''));
     }
 
     private function buildBreadcrumbs(array $category): array
