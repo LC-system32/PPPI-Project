@@ -111,6 +111,46 @@ document.addEventListener('click', function(e) {
 });
 </script>
 
+<!-- ensure dropdown menus are visible above other elements (mega menu) -->
+<style>
+    /* make sure large mega menus are on top */
+    .dropdown-menu { z-index: 1200; }
+    /* slight box-shadow for mega menu */
+    .dropdown-menu { box-shadow: 0 .5rem 1rem rgba(0,0,0,.45); }
+</style>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Ensure all dropdown toggles have a Bootstrap Dropdown instance.
+    // This protects against pages where some script may prevent automatic
+    // initialization or when markup is loaded dynamically.
+    document.addEventListener('DOMContentLoaded', function () {
+        try {
+            document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(function (el) {
+                // create instance if not already
+                if (typeof bootstrap !== 'undefined') {
+                    bootstrap.Dropdown.getOrCreateInstance(el);
+                }
+            });
+        } catch (err) {
+            // swallow errors to avoid breaking the page
+            console.error('Dropdown init error:', err);
+        }
+    });
+
+    // Force show dropdown on click if not shown
+    document.addEventListener('click', function(e) {
+        const toggle = e.target.closest('[data-bs-toggle="dropdown"]');
+        if (!toggle) return;
+        
+        if (typeof bootstrap !== 'undefined') {
+            const dropdown = bootstrap.Dropdown.getInstance(toggle);
+            if (dropdown && !toggle.classList.contains('show')) {
+                dropdown.show();
+            }
+        }
+    });
+</script>
 </body>
 </html>

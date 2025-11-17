@@ -58,3 +58,35 @@
         transform: translateY(0);
     }
 }
+
+/* Mega menu styling */
+.dropdown-menu[aria-labelledby="megaCatalog"] {
+    min-width: 720px !important;
+    max-width: 720px !important;
+    left: auto !important;
+    right: auto !important;
+    border: 1px solid #ffc107;
+    border-radius: 0.375rem;
+}
+
+.dropdown-menu[aria-labelledby="megaCatalog"] li.container {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.dropdown-menu[aria-labelledby="megaCatalog"] h6 {
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    margin-bottom: 1rem;
+}
+
+.dropdown-menu[aria-labelledby="megaCatalog"] .dropdown-item {
+    padding: 0.35rem 0 !important;
+    font-size: 0.9rem;
+    margin: 0 !important;
+}
+
+.dropdown-menu[aria-labelledby="megaCatalog"] .dropdown-item:hover {
+    background-color: rgba(255, 193, 7, 0.1);
+    color: #ffc107 !important;
+}

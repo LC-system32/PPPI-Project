@@ -17,4 +17,4 @@
     ?>
 </head>
 
-<body class="d-flex flex-column min-vh-50">
+<body class="d-flex flex-column min-vh-100">
