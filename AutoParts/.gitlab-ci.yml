@@ -1,0 +1,158 @@
+# GitLab CI/CD Pipeline для AutoParts
+# Документація: https://docs.gitlab.com/ee/ci/
+
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  COMPOSER_CACHE_DIR: vendor/
+  PHP_VERSION: "8.2"
+
+# Cache для Composer залежностей
+cache:
+  paths:
+    - vendor/
+    - .composer-cache/
+
+# ============================================
+# BUILD STAGE
+# ============================================
+
+build:composer:
+  stage: build
+  image: php:${PHP_VERSION}-cli
+  before_script:
+    - apt-get update && apt-get install -y git unzip
+    - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+  script:
+    - composer install --prefer-dist --no-progress --optimize-autoloader
+  artifacts:
+    paths:
+      - vendor/
+    expire_in: 1 hour
+  only:
+    - master
+    - develop
+    - merge_requests
+
+# ============================================
+# TEST STAGE
+# ============================================
+
+test:php-syntax:
+  stage: test
+  image: php:${PHP_VERSION}-cli
+  script:
+    - |
+      for file in $(find ./App -name "*.php" -type f); do
+        php -l "$file" || exit 1
+      done
+    - echo "✓ PHP syntax check passed"
+  only:
+    - master
+    - develop
+    - merge_requests
+
+test:phpstan:
+  stage: test
+  image: php:${PHP_VERSION}-cli
+  dependencies:
+    - build:composer
+  before_script:
+    - apt-get update && apt-get install -y git
+  script:
+    - composer require --dev phpstan/phpstan 2>/dev/null || true
+    - if [ -f "./vendor/bin/phpstan" ]; then ./vendor/bin/phpstan analyse App/ --level=5 || true; else echo "PHPStan not installed"; fi
+  allow_failure: true
+  only:
+    - merge_requests
+
+test:security-audit:
+  stage: test
+  image: php:${PHP_VERSION}-cli
+  dependencies:
+    - build:composer
+  before_script:
+    - apt-get update && apt-get install -y git curl
+    - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+  script:
+    - composer audit --dry-run || true
+  allow_failure: true
+  only:
+    - merge_requests
+
+# ============================================
+# DEPLOY STAGE
+# ============================================
+
+deploy:staging:
+  stage: deploy
+  image: php:${PHP_VERSION}-cli
+  environment:
+    name: staging
+    url: https://staging.example.com
+  before_script:
+    - apt-get update && apt-get install -y openssh-client rsync git
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+  script:
+    - echo "Deploying to staging..."
+    - |
+      if [ -n "$DEPLOY_HOST" ] && [ -n "$DEPLOY_USER" ] && [ -n "$DEPLOY_PATH" ]; then
+        rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./ "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/"
+        echo "✓ Deployment to staging completed"
+      else
+        echo "⚠ Skipping deployment: Missing SSH credentials in CI/CD variables"
+      fi
+  only:
+    - develop
+  when: manual
+
+deploy:production:
+  stage: deploy
+  image: php:${PHP_VERSION}-cli
+  environment:
+    name: production
+    url: https://autoparts.com
+  before_script:
+    - apt-get update && apt-get install -y openssh-client rsync git
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+  script:
+    - echo "Deploying to production..."
+    - |
+      if [ -n "$DEPLOY_HOST" ] && [ -n "$DEPLOY_USER" ] && [ -n "$DEPLOY_PATH" ]; then
+        rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./ "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/"
+        echo "✓ Production deployment completed"
+      else
+        echo "⚠ Skipping deployment: Missing SSH credentials in CI/CD variables"
+      fi
+  only:
+    - master
+  when: manual
+
+# ============================================
+# RELEASE STAGE (опціонально)
+# ============================================
+
+release:package:
+  stage: deploy
+  image: ubuntu:latest
+  before_script:
+    - apt-get update && apt-get install -y zip git
+  script:
+    - mkdir -p build
+    - zip -r autoparts-release-${CI_COMMIT_TAG}.zip . -x "*.git*" "tests/*" "node_modules/*" "build/*"
+    - echo "✓ Release package created: autoparts-release-${CI_COMMIT_TAG}.zip"
+  artifacts:
+    paths:
+      - autoparts-release-*.zip
+    expire_in: 30 days
+  only:
+    - tags
