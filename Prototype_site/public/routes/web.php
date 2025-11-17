@@ -6,6 +6,7 @@ use App\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Controllers\Admin\BrandController as AdminBrandController;
 use App\Controllers\Admin\UserController as AdminUserController;
 use App\Controllers\Admin\CarModelController as AdminCarModelController;
+use App\Controllers\Admin\SupportController as AdminSupportController;
 use App\Controllers\AuthController;
 use App\Controllers\BrandController;
 use App\Controllers\CarModelController;
@@ -16,6 +17,7 @@ use App\Controllers\HomeController;
 use App\Controllers\OrderController;
 use App\Controllers\ProfileController;
 use App\Controllers\ReturnController;
+use App\Controllers\SupportController;
 use App\Core\Router;
 
 Router::get('/', [HomeController::class, 'index']);
@@ -69,12 +71,20 @@ Router::get('/returns/create', [ReturnController::class, 'create']);
 Router::post('/returns', [ReturnController::class, 'store']);
 Router::get('/returns/{id}', [ReturnController::class, 'show']);
 
+// Технічна підтримка
+Router::get('/support', [SupportController::class, 'index']);
+Router::get('/support/create', [SupportController::class, 'create']);
+Router::post('/support', [SupportController::class, 'store']);
+Router::get('/support/{id}', [SupportController::class, 'show']);
+Router::post('/support/{id}/update', [SupportController::class, 'update']);
+Router::post('/support/{id}/close', [SupportController::class, 'close']);
+
 // Інформаційні сторінки футера
 Router::get('/about', [FooterController::class, 'about']);
 Router::get('/privacy-policy', [FooterController::class, 'privacyPolicy']);
 Router::get('/faq', [FooterController::class, 'faq']);
-Router::get('/support', [FooterController::class, 'support']);
-Router::get('/returns', [FooterController::class, 'returns']);
+Router::get('/support-info', [FooterController::class, 'support']);
+Router::get('/returns-info', [FooterController::class, 'returns']);
 Router::get('/delivery-payment', [FooterController::class, 'deliveryPayment']);
 Router::get('/information', [FooterController::class, 'information']);
 
@@ -105,6 +115,13 @@ Router::group('/admin', function () {
     Router::get('/returns', [ReturnController::class, 'adminIndex']);
     Router::get('/returns/{id}', [ReturnController::class, 'adminShow']);
     Router::post('/returns/{id}/status', [ReturnController::class, 'adminUpdateStatus']);
+
+    // Технічна підтримка
+    Router::get('/support', [AdminSupportController::class, 'index']);
+    Router::get('/support/{id}', [AdminSupportController::class, 'show']);
+    Router::post('/support/{id}/respond', [AdminSupportController::class, 'respond']);
+    Router::post('/support/{id}/status', [AdminSupportController::class, 'updateStatus']);
+    Router::post('/support/{id}/delete', [AdminSupportController::class, 'delete']);
 
     // Головна панель адміна (дашборд)
     Router::get('/', [AdminDashboardController::class, 'index']);

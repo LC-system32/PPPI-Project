@@ -153,6 +153,21 @@ CREATE TABLE cart_items (
     quantity INT NOT NULL CHECK (quantity > 0)
 );
 
+-- Support tickets table for technical support requests
+CREATE TABLE support_tickets (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE SET NULL,
+    ticket_number VARCHAR(50) NOT NULL UNIQUE,
+    subject VARCHAR(255) NOT NULL,
+    category VARCHAR(100) NOT NULL,
+    priority VARCHAR(50) NOT NULL DEFAULT 'normal', -- low, normal, high, urgent
+    description TEXT NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'open', -- open, in_progress, resolved, closed
+    response TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Seed data for root and leaf categories (двигун, гальмівна система, підвіска, електрика)
 INSERT INTO categories (name, slug, parent_id, description)
 VALUES
