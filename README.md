@@ -1,4 +1,4 @@
-![Preview](Readme_assets/logoa.png)
+![Preview](logoa.png)
 # AutoParts
 
 ![status](https://img.shields.io/badge/status-beta-brightgreen)
@@ -8,7 +8,7 @@
 
 **AutoParts** — повноцінний проєкт інтернет‑магазину автозапчастин. Складається з бекенду (**/api**, Node.js + PostgreSQL). Надає повний набір можливостей: каталог товарів із фільтрами та сумісністю за авто (марка/модель/покоління/модифікація), кошик, замовлення, улюблені, адреси, довідники методів доставки/оплати, тікет‑саппорт, а також службові маршрути для адміністративних задач. Оптимізовано для роботи за reverse‑proxy і масштабування.
 
-![Preview](Readme_assets/main_page.gif)
+![Preview](main_page.gif)
 
 ---
 
